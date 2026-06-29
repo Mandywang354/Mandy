@@ -1,787 +1,2127 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ELECOM ASIA Order Tracker</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<style>
-:root{--bg:#f2f8f4;--white:#fff;--border:#c8e0d1;--primary:#68BE8D;--pd:#4da674;--pl:#eaf6ef;--text:#1a2e22;--muted:#557a63;--green:#2e7d4f;--gbg:#eaf6ef;--red:#dc2626;--rbg:#fef2f2;--yellow:#ca8a04;--ybg:#fefce8;--blue:#2563eb;--bbg:#eff6ff;--r:8px;}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;}
-.hdr{background:var(--primary);color:#fff;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:52px;box-shadow:0 2px 4px rgba(0,0,0,.15);}
-.hdr h1{font-size:16px;font-weight:600;}
-.hdr-r{display:flex;align-items:center;gap:12px;}
-.sync{font-size:12px;}.sync.ok{color:#d1fae5;}.sync.err{color:#fca5a5;}
-.tabs{background:var(--white);border-bottom:1px solid var(--border);padding:0 24px;display:flex;}
-.tab{padding:14px 20px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;}
-.tab:hover{color:var(--pd);}.tab.on{color:var(--pd);border-bottom-color:var(--primary);}
-.main{padding:24px;max-width:1400px;margin:0 auto;}
-.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 1px 3px rgba(104,190,141,.1);}
-.ch{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
-.ch h2{font-size:14px;font-weight:600;}
-.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s;}
-.bp{background:var(--primary);color:#fff;}.bp:hover{background:var(--pd);}
-.bs{background:var(--white);color:var(--text);border:1px solid var(--border);}.bs:hover{background:var(--bg);}
-.bd{background:var(--rbg);color:var(--red);border:1px solid #fecaca;}
-.bw{background:var(--ybg);color:var(--yellow);border:1px solid #fde68a;}
-.bsc{background:var(--gbg);color:var(--green);border:1px solid #bbf7d0;}
-.sm{padding:4px 10px;font-size:12px;}.xs{padding:2px 7px;font-size:11px;}
-.tw{overflow-x:auto;}
-table{width:100%;border-collapse:collapse;}
-th{background:var(--bg);text-align:left;padding:9px 12px;font-size:11px;font-weight:600;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap;}
-td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle;font-size:13px;white-space:nowrap;}
-.or{cursor:pointer;}.or:hover td{background:var(--pl);}
-.sr td{background:#d4eddf !important;font-weight:600;font-size:12px;border-top:2px solid var(--primary);cursor:pointer;}
-.sr:hover td{background:#c2e4cf !important;}.sr.on td{background:#c2e4cf !important;}
-.dr td{padding:0;border-bottom:2px solid var(--primary);}.dr.h{display:none;}
-.dp{padding:20px 24px;background:#f8fdf9;}
-.dg{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px 20px;margin-bottom:20px;}
-.df{display:flex;flex-direction:column;gap:3px;}
-.df label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
-.df .v{font-size:13px;}
-.pt{display:flex;margin-bottom:20px;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
-.ps{flex:1;padding:10px 14px;background:var(--white);border-right:1px solid var(--border);cursor:pointer;}
-.ps:last-child{border-right:none;}.ps.on{background:var(--primary);color:#fff;}.ps.dn{background:var(--gbg);}
-.ps .pn{font-size:10px;font-weight:700;opacity:.7;}.ps .pl2{font-size:12px;font-weight:600;margin-top:2px;}
-.cl{display:flex;flex-direction:column;gap:8px;}
-.ci{display:flex;align-items:center;gap:8px;font-size:13px;}
-.ci input[type=checkbox]{width:15px;height:15px;accent-color:var(--primary);flex-shrink:0;}
-.ci input[type=date]{padding:3px 7px;border:1px solid var(--border);border-radius:5px;font-size:12px;width:150px;}
-.bdg{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;}
-.b1{background:var(--bbg);color:var(--blue);}.b2{background:var(--ybg);color:var(--yellow);}
-.b3{background:#fdf4ff;color:#9333ea;}.b4{background:var(--gbg);color:var(--green);}
-.bac{background:var(--gbg);color:var(--green);}.bdc{background:var(--bg);color:var(--muted);}
-.fr{color:var(--red);font-size:11px;font-weight:600;}.fy{color:var(--yellow);font-size:11px;font-weight:600;}
-.sl{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding-bottom:6px;border-bottom:1px solid var(--border);margin-bottom:12px;}
-.ab{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding-top:16px;border-top:1px solid var(--border);margin-top:4px;}
-.mb{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center;}
-.mb.op{display:flex;}
-.mo{background:var(--white);border-radius:var(--r);box-shadow:0 20px 60px rgba(0,0,0,.2);width:100%;max-width:640px;max-height:92vh;overflow-y:auto;}
-.mh{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
-.mh h3{font-size:15px;font-weight:600;}
-.mbd{padding:20px;}.mf{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
-.xb{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);}
-.fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
-.fgp{display:flex;flex-direction:column;gap:4px;}
-.fgp label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
-.fgp input,.fgp select,.fgp textarea{padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);background:var(--white);}
-.fgp input:focus,.fgp select:focus{outline:none;border-color:var(--primary);}
-.fgp.full{grid-column:1/-1;}.fgp.ro input{background:var(--bg);color:var(--muted);}
-.fd{grid-column:1/-1;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:8px 0 4px;border-bottom:1px solid var(--border);margin-top:4px;}
-.cn{grid-column:1/-1;font-size:11px;color:var(--pd);background:var(--pl);border:1px solid var(--border);border-radius:5px;padding:6px 10px;}
-.ss{margin-bottom:24px;}.ss h3{font-size:13px;font-weight:600;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);}
-.ai{background:var(--pl);color:var(--pd);border:1px solid var(--border);padding:10px 14px;border-radius:6px;font-size:13px;margin-bottom:14px;}
-.fx{display:flex;align-items:center;gap:10px;font-size:13px;}
-.fx label{font-weight:600;color:var(--muted);white-space:nowrap;}
-.fx input{width:110px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;}
-.fxn{font-size:11px;color:var(--muted);}
-.pb{line-height:1.4;display:inline-flex;flex-direction:column;gap:4px;}
-.pr{display:flex;align-items:center;justify-content:flex-start;gap:12px;}
-.pr .ti{font-size:11px;color:var(--muted);width:58px;text-align:left;}.pr .pv{font-size:13px;font-weight:500;text-align:left;}
-.vnd{font-size:13px;}.ue{font-size:11px;color:var(--pd);margin-top:2px;}
-.mono{font-family:'SF Mono','Fira Code',monospace;font-size:12px;}
-.g8{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
-.m12{margin-bottom:12px;}.h{display:none;}
-.ph{text-align:center;padding:80px 20px;color:var(--muted);}
-.ph h3{font-size:16px;font-weight:600;margin-bottom:8px;color:var(--text);}
-.es{text-align:center;padding:48px 20px;color:var(--muted);font-size:13px;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>資金管理系統</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft JhengHei', sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .container { 
+            padding: 1.5rem; 
+            max-width: 1400px; 
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header { 
+            margin-bottom: 2rem; 
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+        .header h1 { 
+            font-size: 26px; 
+            font-weight: 600; 
+            color: #1f2937; 
+            margin-bottom: 0.5rem; 
+        }
+        .header p { 
+            font-size: 14px; 
+            color: #6b7280; 
+        }
+
+        .main-layout {
+            display: flex;
+            gap: 1rem;
+            flex: 1;
+        }
+
+        .tabs { 
+            display: flex; 
+            flex-direction: column;
+            gap: 8px; 
+            width: 180px;
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            height: fit-content;
+        }
+        .tab { 
+            padding: 12px 16px; 
+            border: none; 
+            background: transparent; 
+            cursor: pointer; 
+            font-size: 14px; 
+            font-weight: 500;
+            border-left: 3px solid transparent;
+            color: #6b7280;
+            text-align: left;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        .tab.active { 
+            color: #3b82f6; 
+            border-left-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .content-area {
+            flex: 1;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+
+        .tab-content { 
+            display: none; 
+        }
+        .tab-content.active { 
+            display: block; 
+        }
+
+        .stats { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
+            gap: 12px; 
+            margin-bottom: 2rem; 
+        }
+        .stat-card { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem; 
+            border-radius: 8px; 
+            text-align: center;
+        }
+        .stat-card.card2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .stat-card.card3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .stat-card.card4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+
+        .stat-label { 
+            font-size: 12px; 
+            opacity: 0.9;
+            margin-bottom: 6px; 
+        }
+        .stat-value { 
+            font-size: 28px; 
+            font-weight: 700; 
+        }
+
+        /* 月曆 */
+        .calendar-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .calendar-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 8px;
+        }
+
+        .calendar-nav button {
+            padding: 8px 14px;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .calendar-nav button:hover {
+            background: #f3f4f6;
+        }
+
+        .calendar {
+            margin-bottom: 2rem;
+        }
+
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            margin-bottom: 1px;
+            background: #e5e7eb;
+        }
+
+        .weekday {
+            background: #f9fafb;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 600;
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: #e5e7eb;
+        }
+
+        .calendar-day {
+            background: white;
+            padding: 10px;
+            min-height: 110px;
+            font-size: 12px;
+            position: relative;
+        }
+
+        .calendar-day.other-month {
+            background: #f9fafb;
+            color: #d1d5db;
+        }
+
+        .day-number {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 6px;
+        }
+
+        .calendar-day.other-month .day-number {
+            color: #d1d5db;
+        }
+
+        .day-events {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .day-event {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 3px 5px;
+            border-radius: 3px;
+            font-size: 10px;
+            white-space: nowrap;
+            cursor: pointer;
+            border: 1px solid #93c5fd;
+            position: relative;
+        }
+
+        .day-event:hover {
+            background: #bfdbfe;
+            z-index: 100;
+        }
+
+        .day-event:hover::after {
+            content: attr(title);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2937;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            z-index: 1000;
+            pointer-events: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            margin-bottom: 5px;
+        }
+
+        .day-event.warning {
+            background: #dbeafe;
+            color: #1e40af;
+            border-color: #93c5fd;
+        }
+
+        .day-event.danger {
+            background: #fee2e2;
+            color: #991b1b;
+            border-color: #fca5a5;
+        }
+
+        .day-event.loan {
+            background: #fed7aa;
+            color: #92400e;
+            border-color: #fdba74;
+        }
+
+        .day-event.deposit {
+            background: #dcfce7;
+            color: #166534;
+            border-color: #86efac;
+        }
+
+        .day-event.note-blue {
+            background: #dbeafe;
+            color: #1e40af;
+            border-color: #93c5fd;
+        }
+
+        .day-event.note-green {
+            background: #dcfce7;
+            color: #166534;
+            border-color: #86efac;
+        }
+
+        .day-event.note-yellow {
+            background: #fef3c7;
+            color: #92400e;
+            border-color: #fcd34d;
+        }
+
+        .day-event.note-red {
+            background: #fee2e2;
+            color: #991b1b;
+            border-color: #fca5a5;
+        }
+
+        .day-event.note-purple {
+            background: #f3e8ff;
+            color: #6b21a8;
+            border-color: #e9d5ff;
+        }
+
+        .calendar-legend {
+            font-size: 12px;
+            color: #6b7280;
+            border-top: 1px solid #e5e5e5;
+            padding-top: 1rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-box {
+            width: 14px;
+            height: 14px;
+            border-radius: 2px;
+        }
+
+        /* 存款卡片 */
+        .deposit-list { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+        }
+
+        .deposit-card { 
+            background: white; 
+            border: 1px solid #e5e5e5; 
+            border-radius: 8px; 
+            padding: 1.25rem;
+            transition: all 0.2s;
+        }
+        .deposit-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .deposit-card.warning { 
+            border-left: 4px solid #f59e0b; 
+            background: #fffbf0;
+        }
+        .deposit-card.danger { 
+            border-left: 4px solid #ef4444; 
+            background: #fef2f2;
+        }
+
+        .card-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: start; 
+            margin-bottom: 12px; 
+        }
+        .card-title { 
+            font-size: 16px; 
+            font-weight: 600; 
+            color: #1f2937; 
+        }
+        .card-meta { 
+            font-size: 12px; 
+            color: #6b7280; 
+            margin-top: 4px; 
+        }
+        .card-badge { 
+            display: inline-block; 
+            padding: 4px 10px; 
+            border-radius: 20px; 
+            font-size: 11px; 
+            font-weight: 600;
+            margin-right: 6px; 
+            margin-bottom: 4px;
+        }
+        .badge-alert { 
+            background: #fef3c7; 
+            color: #92400e; 
+        }
+        .badge-danger { 
+            background: #fee2e2; 
+            color: #991b1b; 
+        }
+        .badge-normal { 
+            background: #dbeafe; 
+            color: #1e40af; 
+        }
+        .badge-currency { 
+            background: #f3f4f6; 
+            color: #6b7280; 
+        }
+
+        .card-details { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); 
+            gap: 12px; 
+            margin-bottom: 12px; 
+            font-size: 13px; 
+        }
+        .detail-label { 
+            color: #6b7280; 
+            margin-bottom: 4px; 
+            font-weight: 500;
+        }
+        .detail-value { 
+            font-size: 14px; 
+            font-weight: 600; 
+            color: #1f2937; 
+        }
+
+        .data-table { 
+            width: 100%; 
+            font-size: 12px; 
+            border-collapse: collapse; 
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .data-table th { 
+            background: #f9fafb; 
+            padding: 12px 8px; 
+            text-align: left; 
+            font-weight: 600;
+            border-bottom: 1px solid #e5e5e5;
+            color: #374151;
+        }
+        .data-table td { 
+            padding: 12px 8px; 
+            border-bottom: 1px solid #f3f4f6; 
+        }
+        .data-table tbody tr:hover { 
+            background: #f9fafb; 
+        }
+
+        .currency-tabs { 
+            display: flex; 
+            gap: 8px; 
+            margin-bottom: 1.5rem; 
+            flex-wrap: wrap; 
+        }
+        .currency-btn { 
+            padding: 6px 14px; 
+            border: 1px solid #d1d5db; 
+            background: white;
+            border-radius: 20px; 
+            cursor: pointer; 
+            font-size: 13px; 
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .currency-btn.active { 
+            background: #3b82f6; 
+            color: white; 
+            border: none; 
+        }
+
+        .add-form { 
+            background: #f9fafb; 
+            padding: 1.5rem; 
+            border-radius: 8px; 
+            margin-bottom: 2rem; 
+            border: 1px solid #e5e5e5;
+        }
+        .form-title { 
+            font-size: 16px; 
+            font-weight: 600; 
+            margin-bottom: 1rem; 
+            color: #1f2937;
+        }
+        .form-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); 
+            gap: 12px; 
+            margin-bottom: 12px; 
+        }
+        .form-group { 
+            display: flex; 
+            flex-direction: column; 
+        }
+        .form-group label { 
+            font-size: 12px; 
+            color: #6b7280; 
+            margin-bottom: 4px; 
+            font-weight: 500;
+        }
+        .form-group input, .form-group select { 
+            padding: 8px 12px; 
+            border: 1px solid #d1d5db; 
+            border-radius: 6px; 
+            font-size: 14px;
+            font-family: inherit;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn { 
+            padding: 8px 16px; 
+            border: 1px solid #d1d5db; 
+            background: white;
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 14px; 
+            font-weight: 500; 
+            transition: all 0.2s;
+            color: #374151;
+        }
+        .btn:hover { 
+            background: #f3f4f6;
+        }
+        .btn-primary { 
+            background: #3b82f6; 
+            color: white; 
+            border: none; 
+        }
+        .btn-primary:hover { 
+            background: #2563eb;
+        }
+        .btn-secondary { 
+            background: #f3f4f6;
+        }
+        .btn-sm { 
+            padding: 6px 12px; 
+            font-size: 12px; 
+        }
+
+        .action-buttons { 
+            display: flex; 
+            gap: 8px; 
+            margin-top: 2rem; 
+            flex-wrap: wrap; 
+        }
+
+        .empty-state { 
+            text-align: center; 
+            padding: 3rem 2rem; 
+            color: #9ca3af;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .disclaimer { 
+            font-size: 12px; 
+            color: #6b7280; 
+            margin-top: 2rem; 
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .header h1 { font-size: 20px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .stats { grid-template-columns: 1fr 1fr; }
+            .calendar-day { min-height: 90px; }
+        }
+    </style>
 </head>
 <body>
-<div class="hdr">
-  <h1>ELECOM ASIA Order Tracker</h1>
-  <div class="hdr-r">
-    <span class="sync" id="syncSt">● Not connected</span>
-    <button class="btn bs sm" onclick="openSettings()">Settings</button>
-  </div>
-</div>
-<div class="tabs">
-  <div class="tab on" onclick="switchTab('active')">Active Orders</div>
-  <div class="tab" onclick="switchTab('shipped')">Shipped &amp; Payment</div>
-  <div class="tab" onclick="switchTab('products')">Product Master</div>
-  <div class="tab" onclick="switchTab('dev')">In Development</div>
-</div>
-<div class="main">
-  <div id="tab-active">
-    <div class="card">
-      <div class="ch">
-        <h2>Active Orders</h2>
-        <div class="g8">
-          <button class="btn bs sm" onclick="document.getElementById('poUp').click()">Upload PO Excel</button>
-          <input type="file" id="poUp" accept=".xlsx,.xls" class="h" onchange="parsePO(event)">
-          <button class="btn bp sm" onclick="openOM()">+ Manual Entry</button>
+<div class="container">
+    <div class="header">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+            <div>
+                <h1>💳 資金管理系統</h1>
+                <p>存款追蹤・貸款監控・現金流分析</p>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <label style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500;">
+                    📥 匯入
+                    <input type="file" id="fileInput" accept=".xlsx,.csv,.xls" style="display: none;" onchange="processFile(this.files[0])">
+                </label>
+                <button onclick="exportToExcel()" style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500;">📤 匯出</button>
+            </div>
         </div>
-      </div>
-      <div class="tw">
-        <table>
-          <thead><tr>
-            <th>PO# (Base)</th><th style="min-width:100px">客人料號</th><th>廠內料號</th>
-            <th>Combined Qty</th><th>工場回答出荷日 P/I</th><th>驗貨日期 Inspection</th>
-            <th>Phase</th><th>Alerts</th><th></th>
-          </tr></thead>
-          <tbody id="aBody"></tbody>
-        </table>
-      </div>
     </div>
-  </div>
-  <div id="tab-shipped" class="h"><div class="ph"><h3>Shipped &amp; Payment — Coming in Stage 3</h3></div></div>
-  <div id="tab-products" class="h">
-    <div class="card">
-      <div class="ch">
-        <h2>Product Master — ELECOM ASIA</h2>
-        <div class="g8">
-          <div class="fx">
-            <label>1 USD =</label>
-            <input type="number" id="fxRate" placeholder="25000" oninput="onFx()">
-            <span class="fxn">VND</span>
-          </div>
-          <button class="btn bp sm" onclick="openPM()">+ Add Product</button>
+
+    <div class="main-layout">
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab(event, 'calendar')">📅 月曆</button>
+        <button class="tab" onclick="switchTab(event, 'list')">📋 詳細列表</button>
+        <button class="tab" onclick="switchTab(event, 'loan-monthly')">📈 現金流</button>
+        <button class="tab" onclick="switchTab(event, 'notes')">📝 備註管理</button>
+        <button class="tab" onclick="switchTab(event, 'add')">➕ 新增</button>
+    </div>
+
+    <div class="content-area">
+
+    <!-- 月曆 -->
+    <div id="calendar" class="tab-content active">
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <div class="calendar-title" id="calendarTitle">2026 年 5 月</div>
+                <div class="calendar-nav">
+                    <button onclick="prevMonth()">← 上月</button>
+                    <button onclick="todayMonth()">今天</button>
+                    <button onclick="nextMonth()">下月 →</button>
+                </div>
+            </div>
+
+            <div class="calendar">
+                <div class="calendar-weekdays">
+                    <div class="weekday">日</div>
+                    <div class="weekday">一</div>
+                    <div class="weekday">二</div>
+                    <div class="weekday">三</div>
+                    <div class="weekday">四</div>
+                    <div class="weekday">五</div>
+                    <div class="weekday">六</div>
+                </div>
+                <div class="calendar-days" id="calendarDays"></div>
+            </div>
+
+            <div class="calendar-legend">
+                <div class="legend-item">
+                    <div class="legend-box" style="background: #dbeafe; border: 1px solid #93c5fd;"></div>
+                    <span>進行中</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box" style="background: #fef3c7; border: 1px solid #fcd34d;"></div>
+                    <span>即將到期 (7天內)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box" style="background: #fee2e2; border: 1px solid #fca5a5;"></div>
+                    <span>已到期</span>
+                </div>
+            </div>
         </div>
-      </div>
-      <div class="tw">
-        <table>
-          <thead><tr><th>客人料號</th><th>廠內料號</th><th>Product SKU</th><th>Description</th>
-          <th>Unit Price USD 500/1000</th><th>Production Cost VND (≈ USD)</th><th>Status</th><th>Note</th><th></th></tr></thead>
-          <tbody id="pBody"></tbody>
-        </table>
-      </div>
     </div>
-  </div>
-  <div id="tab-dev" class="h"><div class="ph"><h3>In Development — Coming Later</h3></div></div>
+
+    <!-- 儀表板 -->
+
+    <!-- 詳細列表 -->
+    <div id="list" class="tab-content">
+        <div style="display: flex; gap: 8px; margin-bottom: 1.5rem; background: white; padding: 0.5rem; border-radius: 6px; width: fit-content;">
+            <button id="list-deposit-btn" class="tab" style="padding: 10px 20px; border: none; background: #3b82f6; color: white; border-radius: 6px; cursor: pointer; font-weight: 500;" onclick="switchListType(event, 'deposit')">💳 定期存款</button>
+            <button id="list-loan-btn" class="tab" style="padding: 10px 20px; border: none; background: #e5e7eb; color: #333; border-radius: 6px; cursor: pointer; font-weight: 500;" onclick="switchListType(event, 'loan')">💰 貸款</button>
+        </div>
+
+        <!-- 定期存款列表 -->
+        <div id="list-deposit-content">
+            <div class="currency-tabs">
+                <button class="currency-btn active" onclick="filterCurrency('ALL')">全部</button>
+                <button class="currency-btn" onclick="filterCurrency('USD')">USD</button>
+                <button class="currency-btn" onclick="filterCurrency('TWD')">TWD</button>
+                <button class="currency-btn" onclick="filterCurrency('CNY')">CNY</button>
+                <button class="currency-btn" onclick="filterCurrency('JPY')">JPY</button>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>銀行 / 帳戶</th>
+                        <th>幣別</th>
+                        <th>金額</th>
+                        <th>利率</th>
+                        <th>起存日</th>
+                        <th>到期日</th>
+                        <th>利息</th>
+                        <th>本利和</th>
+                        <th>備註</th>
+                        <th>狀態</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+
+        <!-- 貸款列表 -->
+        <div id="list-loan-content" style="display: none;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>銀行</th>
+                        <th>借款金額</th>
+                        <th>年利率</th>
+                        <th>借款日</th>
+                        <th>到期日</th>
+                        <th>還款方式</th>
+                        <th>狀態</th>
+                        <th>備註</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="loanTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 備註管理 -->
+    <div id="notes" class="tab-content">
+        <div class="add-form">
+            <div class="form-title">📝 新增備註到月曆</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>備註內容 *</label>
+                    <input type="text" id="noteContent" placeholder="例：年度財務檢視、銀行交易確認等">
+                </div>
+                <div class="form-group">
+                    <label>日期 *</label>
+                    <input type="date" id="noteDate">
+                </div>
+                <div class="form-group">
+                    <label>標籤顏色</label>
+                    <select id="noteColor">
+                        <option value="blue">🔵 藍色</option>
+                        <option value="green">🟢 綠色</option>
+                        <option value="yellow">🟡 黃色</option>
+                        <option value="red">🔴 紅色</option>
+                        <option value="purple">🟣 紫色</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="addNote()">✓ 新增備註</button>
+        </div>
+
+        <div style="margin-top: 2rem;">
+            <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 1rem; color: #1f2937;">備註列表</h3>
+            <div id="notesList" class="deposit-list"></div>
+        </div>
+    </div>
+
+    <!-- 新增 -->
+    <div id="add" class="tab-content">
+        <div style="display: flex; gap: 8px; margin-bottom: 1.5rem; background: white; padding: 0.5rem; border-radius: 6px; width: fit-content;">
+            <button id="btn-deposit-type" class="tab" style="padding: 10px 20px; border: none; background: #3b82f6; color: white; border-radius: 6px; cursor: pointer; font-weight: 500;" onclick="switchAddType(event, 'deposit')">💳 定期存款</button>
+            <button id="btn-loan-type" class="tab" style="padding: 10px 20px; border: none; background: #e5e7eb; color: #333; border-radius: 6px; cursor: pointer; font-weight: 500;" onclick="switchAddType(event, 'loan')">💰 貸款</button>
+        </div>
+
+        <!-- 新增存款表單 -->
+        <div id="add-deposit-form" class="add-form">
+            <div class="form-title">💳 新增定期存款</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>銀行名稱</label>
+                    <select id="bankName">
+                        <option value="">選擇銀行</option>
+                        <option value="玉山銀行">玉山銀行</option>
+                        <option value="國泰世華">國泰世華</option>
+                        <option value="彰化銀行">彰化銀行</option>
+                        <option value="兆豐銀行">兆豐銀行</option>
+                        <option value="台北富邦銀行">台北富邦銀行</option>
+                        <option value="第一銀行">第一銀行</option>
+                        <option value="中國信託">中國信託</option>
+                        <option value="台新銀行">台新銀行</option>
+                        <option value="其他">其他</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>幣別</label>
+                    <select id="currency">
+                        <option value="USD">USD</option>
+                        <option value="TWD">TWD</option>
+                        <option value="CNY">CNY</option>
+                        <option value="JPY">JPY</option>
+                        <option value="EUR">EUR</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>存款金額</label>
+                    <input type="number" id="amount" placeholder="例：500000" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>年利率 (%)</label>
+                    <input type="number" id="rate" placeholder="例：3.7" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>起存日期</label>
+                    <input type="date" id="startDate">
+                </div>
+                <div class="form-group">
+                    <label>到期日期</label>
+                    <input type="date" id="endDate">
+                </div>
+                <div class="form-group">
+                    <label>備註 (選填)</label>
+                    <input type="text" id="notes" placeholder="例：自動轉帳、需提前通知等">
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="addDeposit()">✓ 新增</button>
+        </div>
+
+        <!-- 新增貸款表單 -->
+        <div id="add-loan-form" class="add-form" style="display: none;">
+            <div class="form-title">💰 新增貸款</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>貸款銀行 *</label>
+                    <select id="loanBank">
+                        <option value="">選擇銀行</option>
+                        <option value="台新銀行">台新銀行</option>
+                        <option value="台北富邦銀行">台北富邦銀行</option>
+                        <option value="中國信託">中國信託</option>
+                        <option value="玉山銀行">玉山銀行</option>
+                        <option value="彰化銀行">彰化銀行</option>
+                        <option value="國泰世華">國泰世華</option>
+                        <option value="兆豐銀行">兆豐銀行</option>
+                        <option value="第一銀行">第一銀行</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>貸款金額 *</label>
+                    <input type="number" id="loanAmount" placeholder="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>年利率(%) *</label>
+                    <input type="number" id="loanRate" placeholder="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>借款日期 *</label>
+                    <input type="date" id="loanStartDate">
+                </div>
+                <div class="form-group">
+                    <label>到期日期 *</label>
+                    <input type="date" id="loanEndDate">
+                </div>
+                <div class="form-group">
+                    <label>還款方式 *</label>
+                    <select id="loanType">
+                        <option value="monthly-interest">① 每月付息</option>
+                        <option value="monthly-principal">② 還本還息</option>
+                        <option value="special">③ 特殊(備註)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>月付金額 (僅供參考)</label>
+                    <input type="number" id="loanMonthlyPayment" placeholder="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>備註 (選填)</label>
+                    <input type="text" id="loanNotes" placeholder="例：利息到期還本等">
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="addLoan()">✓ 新增</button>
+        </div>
+    </div>
+
+    <!-- 貸款儀表板 -->
+
+    <!-- 月份付款計算 -->
+    <div id="loan-monthly" class="tab-content">
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; background: white; padding: 1rem; border-radius: 6px; align-items: center;">
+            <label>時間區間：</label>
+            <input type="date" id="monthlyStartDate" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            <span>至</span>
+            <input type="date" id="monthlyEndDate" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            <button onclick="renderMonthlyPayment()" style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">查詢</button>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table class="data-table" style="min-width: 800px;">
+                <thead>
+                    <tr>
+                        <th>月份</th>
+                        <th>銀行</th>
+                        <th>扣款金額</th>
+                        <th>本金</th>
+                        <th>利息</th>
+                    </tr>
+                </thead>
+                <tbody id="monthlyPaymentBody"></tbody>
+            </table>
+        </div>
+    </div>
+    </div>
+    </div>
+
+    <div class="action-buttons">
+
+    <div class="disclaimer">
+        💡 提示：本工具為輔助工具，實際利息計算應依照銀行合約。資料存在瀏覽器，關閉不會遺失。
+    </div>
 </div>
 
-<!-- ORDER MODAL -->
-<div class="mb" id="omModal">
-  <div class="mo" style="max-width:660px">
-    <div class="mh"><h3 id="omTitle">New Order</h3><button class="xb" onclick="closeOM()">&#215;</button></div>
-    <div class="mbd">
-      <div class="fg">
-        <div class="fd">PO Information</div>
-        <div class="fgp"><label>PO# (Base)</label><input id="o_po" placeholder="PUO202505770"></div>
-        <div class="fgp"><label>Order Date</label><input id="o_od" type="date"></div>
-        <div class="fgp"><label>客人料號</label><input id="o_cpn" placeholder="P-DSMMWBK" oninput="aFill()"></div>
-        <div class="fgp ro"><label>廠內料號</label><input id="o_ipn" readonly></div>
-        <div class="fd">Port Breakdown</div>
-        <div class="fgp"><label>Kanagawa Qty</label><input id="o_qk" type="number" placeholder="0" oninput="calcT()"></div>
-        <div class="fgp"><label>Kobe Qty</label><input id="o_qb" type="number" placeholder="0" oninput="calcT()"></div>
-        <div class="fgp ro"><label>Combined Qty</label><input id="o_qc" readonly></div>
-        <div class="fd">Dates</div>
-        <div class="fgp"><label>工場回答出荷日 P/I</label><input id="o_fc" type="date"></div>
-        <div class="fgp"><label>驗貨日期 Inspection Date</label><input id="o_id" type="date"></div>
-        <div class="fd">Pricing</div>
-        <div class="fgp"><label>Unit Price USD (editable)</label><input id="o_up" type="number" step="0.01" placeholder="0.00" oninput="reCalc()"></div>
-        <div class="fgp ro"><label>Total Amount USD</label><input id="o_tot" readonly></div>
-        <div class="fd">Internal References</div>
-        <div id="cNote" class="cn h">Carried over from previous — edit if different</div>
-        <div class="fgp"><label>訂單單號</label><input id="o_on"></div>
-        <div class="fgp"><label>請購單號</label><input id="o_rn"></div>
-        <div class="fgp"><label>採購單號</label><input id="o_pn"></div>
-        <div class="fgp full"><label>Note</label><textarea id="o_nt" rows="2"></textarea></div>
-      </div>
-    </div>
-    <div class="mf" id="omFoot">
-      <button class="btn bs" onclick="closeOM()">Cancel</button>
-      <button class="btn bp" onclick="saveO()">Save Order</button>
-    </div>
-  </div>
-</div>
-
-<!-- ADJ MODAL -->
-<div class="mb" id="adjModal">
-  <div class="mo" style="max-width:480px">
-    <div class="mh"><h3>Schedule Change Log</h3><button class="xb" onclick="closeAdj()">&#215;</button></div>
-    <div class="mbd">
-      <div class="fg">
-        <div class="fgp"><label>Date Requested</label><input id="a_dr" type="date"></div>
-        <div class="fgp"><label>New P/I Date</label><input id="a_nf" type="date"></div>
-        <div class="fgp"><label>生管 Confirmed?</label><select id="a_pc"><option value="">—</option><option>Yes</option><option>No</option></select></div>
-        <div class="fgp"><label>Customer Replied?</label><select id="a_cr"><option value="">—</option><option>Yes</option><option>No</option></select></div>
-        <div class="fgp"><label>TWX Updated?</label><select id="a_tw"><option value="">—</option><option>Yes</option><option>No</option></select></div>
-        <div class="fgp"><label>Batch No. Revised?</label><select id="a_br"><option value="">—</option><option>Yes</option><option>No</option></select></div>
-        <div class="fgp full"><label>Note</label><textarea id="a_nt" rows="2"></textarea></div>
-      </div>
-    </div>
-    <div class="mf">
-      <button class="btn bs" onclick="closeAdj()">Cancel</button>
-      <button class="btn bw" onclick="saveAdj()">Save</button>
-    </div>
-  </div>
-</div>
-
-<!-- PRODUCT MODAL -->
-<div class="mb" id="pmModal">
-  <div class="mo">
-    <div class="mh"><h3 id="pmTitle">Add Product</h3><button class="xb" onclick="closePM()">&#215;</button></div>
-    <div class="mbd">
-      <div class="fg">
-        <div class="fd">Identification</div>
-        <div class="fgp"><label>客人料號 *</label><input id="f_cp" placeholder="P-DSMMWBK"></div>
-        <div class="fgp"><label>廠內料號 *</label><input id="f_ip" placeholder="8ELB130001"></div>
-        <div class="fgp"><label>Product SKU</label><input id="f_sk" placeholder="6MT1300152"></div>
-        <div class="fgp"><label>Description</label><input id="f_de"></div>
-        <div class="fd">Pricing USD</div>
-        <div class="fgp"><label>Unit Price 500 pcs</label><input id="f_p5" type="number" step="0.01" placeholder="0.00"></div>
-        <div class="fgp"><label>Unit Price 1000 pcs</label><input id="f_p10" type="number" step="0.01" placeholder="0.00"></div>
-        <div class="fd">Production Cost</div>
-        <div class="fgp"><label>Production Cost VND</label><input id="f_pc" type="number" step="1" oninput="updUSD()"></div>
-        <div class="fgp"><label>approx USD</label><input id="f_pu" readonly style="background:var(--bg);color:var(--muted)"></div>
-        <div class="fd">Other</div>
-        <div class="fgp"><label>Status</label><select id="f_st"><option value="Active">Active</option><option value="Discontinued">Discontinued</option></select></div>
-        <div class="fgp full"><label>Note</label><textarea id="f_nt" rows="2"></textarea></div>
-      </div>
-    </div>
-    <div class="mf">
-      <button class="btn bs" onclick="closePM()">Cancel</button>
-      <button class="btn bp" onclick="saveP()">Save Product</button>
-    </div>
-  </div>
-</div>
-
-<!-- SETTINGS MODAL -->
-<div class="mb" id="setModal">
-  <div class="mo" style="max-width:480px">
-    <div class="mh"><h3>Settings</h3><button class="xb" onclick="closeSet()">&#215;</button></div>
-    <div class="mbd">
-      <div class="ss">
-        <h3>GitHub Integration</h3>
-        <div class="ai">Data saved to data.json in your repo. Token stored in this browser only.</div>
-        <div class="fgp m12"><label>GitHub Username</label><input id="c_u"></div>
-        <div class="fgp m12"><label>Repository Name</label><input id="c_r" value="elecom-tracker"></div>
-        <div class="fgp m12"><label>Personal Access Token</label><input id="c_t" type="password"></div>
-        <div class="g8">
-          <button class="btn bp" onclick="saveGH()">Save + Test</button>
-          <button class="btn bs" onclick="loadGH()">Load Data</button>
+<!-- 備註編輯彈窗 -->
+<div id="notesModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background: white; border-radius: 8px; padding: 2rem; max-width: 400px; width: 90%; box-shadow: 0 20px 25px rgba(0,0,0,0.15);">
+        <h2 style="font-size: 18px; font-weight: 600; margin-bottom: 1rem; color: #1f2937;">📝 編輯備註</h2>
+        <div id="notesDetailBank" style="font-size: 14px; color: #6b7280; margin-bottom: 1rem;"></div>
+        <textarea id="notesInput" style="width: 100%; min-height: 100px; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; font-family: inherit; resize: vertical;"></textarea>
+        <div style="display: flex; gap: 8px; margin-top: 1.5rem;">
+            <button class="btn btn-primary" onclick="saveNotes()" style="flex: 1;">✓ 儲存</button>
+            <button class="btn btn-secondary" onclick="closeNotesModal()" style="flex: 1;">✕ 取消</button>
         </div>
-        <div id="ghMsg" style="margin-top:10px;font-size:13px"></div>
-      </div>
-      <div class="ss">
-        <h3>Manual Backup</h3>
-        <div class="g8">
-          <button class="btn bs" onclick="expJ()">Export JSON</button>
-          <button class="btn bs" onclick="document.getElementById('impF').click()">Import JSON</button>
-          <input type="file" id="impF" accept=".json" class="h" onchange="impJ(event)">
-        </div>
-      </div>
     </div>
-    <div class="mf"><button class="btn bs" onclick="closeSet()">Close</button></div>
-  </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
 
 <script>
-var S = {
-  fxRate:'',
-  products:[
-    {id:'p1',custPN:'P-DSMMWBK', iPN:'8ELB130001',sku:'',desc:'',p500:'',p1000:'',pc:'',status:'Active',note:''},
-    {id:'p2',custPN:'P-DSMMWWH', iPN:'8ELB130002',sku:'',desc:'',p500:'',p1000:'',pc:'',status:'Active',note:''},
-    {id:'p3',custPN:'P-DSMMWPN', iPN:'8ELB130003',sku:'',desc:'',p500:'',p1000:'',pc:'',status:'Active',note:''},
-    {id:'p4',custPN:'PWCARS18BK',iPN:'8ELC130001',sku:'',desc:'',p500:'',p1000:'',pc:'',status:'Active',note:''},
-    {id:'p5',custPN:'P-CARS18BK',iPN:'8ELB040001',sku:'',desc:'',p500:'',p1000:'',pc:'',status:'Active',note:''}
-  ],
-  orders:[],
-  shipped:[],
-  po:{}
-};
-var GH={user:'',repo:'',token:''};
-var editOId=null, editPId=null, adjPO=null, expPO=null;
-var pQueue=[], pIdx=0, lastRefs={on:'',rn:'',pn:''};
-
-function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
-function fU(v){if(v===''||v==null)return '—';return '$'+Number(v).toFixed(2);}
-function fV(v){if(v===''||v==null)return '—';return Number(v).toLocaleString()+' ₫';}
-function v2u(v){var r=parseFloat(S.fxRate);if(!r||!v||v==='')return null;return(parseFloat(v)/r).toFixed(2);}
-function dUntil(d){if(!d)return null;return Math.ceil((new Date(d)-new Date())/86400000);}
-function wdSince(d){
-  if(!d)return null;
-  var c=new Date(d),n=new Date(),cnt=0;
-  while(c<=n){if(c.getDay()!==0&&c.getDay()!==6)cnt++;c.setDate(c.getDate()+1);}
-  return cnt;
-}
-function pDate(v){
-  if(!v||v==='')return '';
-  if(v instanceof Date)return v.toISOString().slice(0,10);
-  var s=String(v).trim(),m=s.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
-  if(m)return m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');
-  return s;
-}
-function fProd(cpn){
-  for(var i=0;i<S.products.length;i++)
-    if(S.products[i].custPN.toLowerCase()===String(cpn||'').toLowerCase())return S.products[i];
-  return null;
-}
-function fOrd(id){for(var i=0;i<S.orders.length;i++)if(S.orders[i].id===id)return S.orders[i];return null;}
-function gv(id){return document.getElementById(id).value.trim();}
-
-function getPO(b){
-  if(!S.po)S.po={};
-  if(!S.po[b])S.po[b]={phase:1,signBack:'',twx:false,issued:false,pcNotif:false,inspEmail:'',inspNotice:'',shipDone:false,inspDate:'',adjLog:[],on:'',rn:'',pn:''};
-  return S.po[b];
+let deposits = JSON.parse(localStorage.getItem('deposits'));
+// 如果沒有資料或資料不完整，使用完整資料（包括已到期）
+if (!deposits || deposits.length < 9) {
+    deposits = [
+        // 進行中的資料
+        { id: 1, bankName: '台新定存', currency: 'USD', amount: 597515.04, rate: 3.70, startDate: '2026-05-18', endDate: '2026-08-18', notes: '' },
+        { id: 2, bankName: '彰銀定存', currency: 'USD', amount: 600000, rate: 3.78, startDate: '2026-04-21', endDate: '2026-07-21', notes: '' },
+        { id: 3, bankName: '台北富邦定存', currency: 'USD', amount: 200000, rate: 3.93, startDate: '2026-03-26', endDate: '2026-06-26', notes: '' },
+        { id: 4, bankName: '台北富邦定存', currency: 'USD', amount: 155533, rate: 3.71, startDate: '2026-04-21', endDate: '2026-07-21', notes: '' },
+        { id: 5, bankName: '國泰世華定存', currency: 'USD', amount: 342950.56, rate: 3.68, startDate: '2026-04-21', endDate: '2026-07-21', notes: '' },
+        { id: 6, bankName: '一銀儲蓄定存', currency: 'USD', amount: 314602.96, rate: 3.62, startDate: '2026-04-21', endDate: '2026-07-21', notes: '' },
+        { id: 7, bankName: '中信定存', currency: 'USD', amount: 257239.57, rate: 3.82, startDate: '2026-06-01', endDate: '2026-09-01', notes: '' },
+        // 已到期的資料
+        { id: 8, bankName: '台新定存(舊)', currency: 'USD', amount: 597515.04, rate: 3.70, startDate: '2026-02-18', endDate: '2026-05-18', notes: '' },
+        { id: 9, bankName: '中信定存(舊)', currency: 'USD', amount: 250000, rate: 3.67, startDate: '2026-02-24', endDate: '2026-05-24', notes: '' }
+    ];
+    localStorage.setItem('deposits', JSON.stringify(deposits));
 }
 
-function switchTab(n){
-  var ns=['active','shipped','products','dev'];
-  document.querySelectorAll('.tab').forEach(function(t,i){t.classList.toggle('on',ns[i]===n);});
-  ns.forEach(function(x){var e=document.getElementById('tab-'+x);if(e)e.classList.toggle('h',x!==n);});
+let notes = JSON.parse(localStorage.getItem('notes')) || [];
+
+let loans = JSON.parse(localStorage.getItem('loans')) || [
+    // 銀行借款（每月付息）
+    { id: 1001, bank: '國泰世華', amount: 19900000, rate: 2.45, startDate: '2024-05-29', endDate: '2025-05-29', type: 'monthly-interest', monthlyPayment: 0, notes: '銀行借款' },
+    { id: 1002, bank: '彰化銀行', amount: 3000000, rate: 2.05, startDate: '2025-12-30', endDate: '2026-06-30', type: 'monthly-interest', monthlyPayment: 0, notes: '銀行借款' },
+    { id: 1003, bank: '玉山銀行', amount: 7000000, rate: 2.05, startDate: '2026-01-23', endDate: '2026-07-23', type: 'monthly-interest', monthlyPayment: 0, notes: '銀行借款' },
+    { id: 1004, bank: '兆豐銀行', amount: 10000000, rate: 2.215, startDate: '2026-01-28', endDate: '2026-07-28', type: 'monthly-interest', monthlyPayment: 0, notes: '銀行借款' },
+    { id: 1005, bank: '玉山銀行', amount: 10000000, rate: 2.05, startDate: '2026-03-11', endDate: '2026-09-11', type: 'monthly-interest', monthlyPayment: 0, notes: '銀行借款' },
+    { id: 1006, bank: '玉山銀行', amount: 3000000, rate: 2.05, startDate: '2026-03-24', endDate: '2026-09-24', type: 'monthly-interest', monthlyPayment: 0, notes: '銀行借款' },
+    { id: 1007, bank: '台北富邦銀行', amount: 20000000, rate: 2.167, startDate: '2026-03-26', endDate: '2026-06-24', type: 'monthly-interest', monthlyPayment: 0, notes: '銀行借款' },
+    { id: 1008, bank: '彰化銀行', amount: 3000000, rate: 2.05, startDate: '2026-03-26', endDate: '2026-09-26', type: 'monthly-interest', monthlyPayment: 0, notes: '銀行借款' },
+    { id: 1009, bank: '第一銀行', amount: 5000000, rate: 2.195, startDate: '2026-04-15', endDate: '2026-07-15', type: 'monthly-interest', monthlyPayment: 0, notes: '銀行借款' },
+    { id: 1010, bank: '彰化銀行', amount: 4000000, rate: 2.05, startDate: '2025-11-17', endDate: '2026-11-18', type: 'monthly-interest', monthlyPayment: 0, notes: '銀行借款' },
+    
+    // 銀行長期借款（每月還本+利息）
+    { id: 2001, bank: '玉山銀行', amount: 2128279, rate: 1.95, startDate: '2019-12-24', endDate: '2039-12-24', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
+    { id: 2002, bank: '玉山銀行', amount: 63404618, rate: 1.95, startDate: '2019-12-24', endDate: '2039-12-24', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
+    { id: 2003, bank: '玉山銀行', amount: 15688429, rate: 1.95, startDate: '2020-09-21', endDate: '2040-09-21', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
+    { id: 2004, bank: '玉山銀行', amount: 238991, rate: 1.95, startDate: '2020-09-21', endDate: '2040-09-21', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
+    { id: 2005, bank: '台北富邦銀行', amount: 2208331, rate: 2.22, startDate: '2025-12-30', endDate: '2030-10-27', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
+    { id: 2006, bank: '彰化銀行', amount: 80554, rate: 2.22, startDate: '2026-01-23', endDate: '2028-10-02', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
+    { id: 2007, bank: '彰化銀行', amount: 7333334, rate: 2.22, startDate: '2025-12-30', endDate: '2029-02-21', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
+    { id: 2008, bank: '彰化銀行', amount: 11238890, rate: 2.22, startDate: '2026-01-28', endDate: '2029-03-20', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
+    { id: 2009, bank: '兆豐銀行', amount: 20000000, rate: 2.22, startDate: '2026-03-24', endDate: '2029-05-07', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款 (6/7開始還本)' },
+    { id: 2010, bank: '玉山銀行', amount: 5887173, rate: 2.22, startDate: '2026-04-15', endDate: '2027-07-15', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
+    { id: 2011, bank: '玉山銀行', amount: 3976545, rate: 2.22, startDate: '2025-10-27', endDate: '2027-12-02', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
+    { id: 2012, bank: '中國信託', amount: 3510739, rate: 2.36, startDate: '2023-10-02', endDate: '2028-06-16', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
+    { id: 2013, bank: '台北富邦銀行', amount: 458335, rate: 2.22, startDate: '2026-06-16', endDate: '2030-12-08', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
+    { id: 2014, bank: '台新銀行', amount: 10000000, rate: 2.59, startDate: '2024-02-21', endDate: '2028-08-29', type: 'monthly-interest', monthlyPayment: 0, notes: '特殊：長期借款但每月付息' },
+    { id: 2015, bank: '中國信託', amount: 9639658, rate: 2.36, startDate: '2024-05-07', endDate: '2028-06-16', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' }
+];
+
+const banks = ['台新銀行', '台北富邦銀行', '中國信託', '玉山銀行', '彰化銀行', '國泰世華', '兆豐銀行', '第一銀行'];
+
+let currentMonth = new Date();
+let currentCurrencyFilter = 'ALL';
+let currentEditingNoteId = null;
+
+function saveDeposits() {
+    localStorage.setItem('deposits', JSON.stringify(deposits));
+    localStorage.setItem('notes', JSON.stringify(notes));
+    localStorage.setItem('loans', JSON.stringify(loans));
 }
 
-function pbadge(p){
-  var c={1:'b1',2:'b2',3:'b3',4:'b4'},l={1:'Intake',2:'Production',3:'Inspection',4:'Ready'};
-  return '<span class="bdg '+(c[p]||'b1')+'">'+(l[p]||'Intake')+'</span>';
+function daysUntil(dateStr) {
+    const date = new Date(dateStr);
+    const today = new Date();
+    const ms = date - today;
+    return Math.ceil(ms / (1000 * 60 * 60 * 24));
 }
 
-function getAlerts(pd){
-  var a=[];
-  if(pd.phase===1&&!pd.signBack){var w=wdSince(pd.orderDate);if(w>=3)a.push('<span class="fr">Sign-back overdue</span>');else if(w===2)a.push('<span class="fy">Sign-back due soon</span>');}
-  if((pd.phase===2||pd.phase===3)&&pd.inspDate&&!pd.inspEmail){var d=dUntil(pd.inspDate);if(d!==null&&d<=21)a.push('<span class="'+(d<=7?'fr':'fy')+'">Book inspection'+(d<=0?' OVERDUE':' in '+d+'d')+'</span>');}
-  if(pd.phase===3&&pd.inspDate&&!pd.inspNotice){var d2=dUntil(pd.inspDate);if(d2!==null&&d2<=5)a.push('<span class="'+(d2<=0?'fr':'fy')+'">Notice due'+(d2<=0?' OVERDUE':' in '+d2+'d')+'</span>');}
-  return a.join('<br>');
+function calculateInterest(amount, rate, startDate, endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const days = (end - start) / (1000 * 60 * 60 * 24);
+    return (amount * rate * days) / (365 * 100);
 }
 
-function renderOrders(){
-  var tb=document.getElementById('aBody');
-  var ords=S.orders.slice().sort(function(a,b){if(!a.fc)return 1;if(!b.fc)return -1;return new Date(a.fc)-new Date(b.fc);});
-  if(!ords.length){tb.innerHTML='<tr><td colspan="9"><div class="es">No active orders. Upload a PO Excel or add manually.</div></td></tr>';return;}
-  var grps={},ord=[];
-  for(var i=0;i<ords.length;i++){if(!grps[ords[i].po]){grps[ords[i].po]=[];ord.push(ords[i].po);}grps[ords[i].po].push(ords[i]);}
-  var html='';
-  for(var gi=0;gi<ord.length;gi++){
-    var pb=ord[gi],lines=grps[pb],pd=getPO(pb),isE=expPO===pb;
-    for(var li=0;li<lines.length;li++){
-      var o=lines[li];
-      html+='<tr class="or" onclick="togD(\''+pb+'\')">'+
-        '<td><span class="mono">'+o.po+'</span></td>'+
-        '<td><span class="mono">'+o.cpn+'</span></td>'+
-        '<td><span class="mono">'+(o.ipn||'—')+'</span></td>'+
-        '<td>'+(o.qc||'—')+' pcs</td>'+
-        '<td>'+(o.fc||'—')+'</td>'+
-        '<td>'+(pd.inspDate||'—')+'</td>'+
-        '<td></td><td></td>'+
-        '<td onclick="event.stopPropagation()"><div class="g8">'+
-          '<button class="btn bs xs" onclick="editO(\''+o.id+'\')">Edit</button>'+
-          '<button class="btn bd xs" onclick="delO(\''+o.id+'\')">Del</button>'+
-        '</div></td></tr>';
+function switchTab(event, tabName) {
+    event.preventDefault();
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabName).classList.add('active');
+    event.target.classList.add('active');
+}
+
+function switchAddType(event, type) {
+    event.preventDefault();
+    
+    const depositForm = document.getElementById('add-deposit-form');
+    const loanForm = document.getElementById('add-loan-form');
+    const btnDeposit = document.getElementById('btn-deposit-type');
+    const btnLoan = document.getElementById('btn-loan-type');
+    
+    if (type === 'deposit') {
+        depositForm.style.display = 'block';
+        loanForm.style.display = 'none';
+        btnDeposit.style.background = '#3b82f6';
+        btnDeposit.style.color = 'white';
+        btnLoan.style.background = '#e5e7eb';
+        btnLoan.style.color = '#333';
+    } else {
+        depositForm.style.display = 'none';
+        loanForm.style.display = 'block';
+        btnDeposit.style.background = '#e5e7eb';
+        btnDeposit.style.color = '#333';
+        btnLoan.style.background = '#3b82f6';
+        btnLoan.style.color = 'white';
     }
-    var tq=0,ta=0,ha=false;
-    for(var si=0;si<lines.length;si++){tq+=parseInt(lines[si].qc)||0;if(lines[si].price&&lines[si].qc){ta+=parseFloat(lines[si].price)*(parseInt(lines[si].qc)||0);ha=true;}}
-    var al=getAlerts(pd);
-    html+='<tr class="sr'+(isE?' on':'')+'" onclick="togD(\''+pb+'\')">'+
-      '<td colspan="2" style="color:var(--pd);padding:8px 12px;">Total: '+pb+'</td>'+
-      '<td style="color:var(--muted);padding:8px 12px;">'+lines.length+' SKU'+(lines.length>1?'s':'')+'</td>'+
-      '<td style="padding:8px 12px;">'+tq+' pcs</td>'+
-      '<td style="padding:8px 12px;"></td><td style="padding:8px 12px;"></td>'+
-      '<td style="padding:8px 12px;">'+pbadge(pd.phase||1)+'</td>'+
-      '<td style="padding:8px 12px;">'+(al||'—')+'</td>'+
-      '<td style="padding:8px 12px;">'+(ha?'$'+ta.toFixed(2):'—')+'</td>'+
-    '</tr>';
-    html+='<tr class="dr'+(isE?'':' h')+'" id="dr-'+pb+'"><td colspan="9">'+buildDP(pb,pd,lines)+'</td></tr>';
-  }
-  tb.innerHTML=html;
 }
 
-function togD(pb){expPO=expPO===pb?null:pb;renderOrders();}
-
-function buildDP(pb,pd,lines){
-  var pn={1:'Intake',2:'Production',3:'Inspection',4:'Ready'};
-  var ph='<div class="pt">';
-  for(var i=1;i<=4;i++){
-    var c=pd.phase===i?'on':(pd.phase>i?'dn':'');
-    ph+='<div class="ps '+c+'" onclick="setPhase(\''+pb+'\','+i+');event.stopPropagation()">'+
-      '<div class="pn">Phase '+i+'</div><div class="pl2">'+pn[i]+'</div></div>';
-  }
-  ph+='</div>';
-
-  var cl='<div class="cl">';
-  cl+=pcDate(pb,'signBack','PO signed back (date sent)',pd);
-  cl+=pcBox(pb,'twx','TWX delivery date confirmed',pd);
-  if(pd.phase>=2){cl+=pcBox(pb,'issued','Internal order issued to factory',pd);cl+=pcBox(pb,'pcNotif','Production Control notified with inspection report',pd);}
-  if(pd.phase>=3){cl+=pcDate(pb,'inspEmail','Inspection email sent to Trang (3rd party)',pd);cl+=pcDate(pb,'inspNotice','Inspection notice sent to factory',pd);}
-  if(pd.phase===4)cl+=pcBox(pb,'shipDone','TWX shipment registration completed',pd);
-  cl+='</div>';
-
-  var skuT='<table style="width:100%;border-collapse:collapse;margin-bottom:16px;font-size:12px">'+
-    '<tr style="color:var(--muted);border-bottom:1px solid var(--border)">'+
-    '<th style="text-align:left;padding:4px 8px;font-weight:600">客人料號</th>'+
-    '<th style="text-align:left;padding:4px 8px;font-weight:600">廠內料號</th>'+
-    '<th style="text-align:left;padding:4px 8px;font-weight:600">Kanagawa</th>'+
-    '<th style="text-align:left;padding:4px 8px;font-weight:600">Kobe</th>'+
-    '<th style="text-align:left;padding:4px 8px;font-weight:600">Combined</th>'+
-    '<th style="text-align:left;padding:4px 8px;font-weight:600">Unit Price</th>'+
-    '<th style="text-align:left;padding:4px 8px;font-weight:600">Total</th></tr>';
-  for(var li=0;li<lines.length;li++){
-    var o=lines[li],lt=o.price&&o.qc?'$'+(parseFloat(o.price)*parseInt(o.qc)).toFixed(2):'—';
-    skuT+='<tr style="border-bottom:1px solid var(--border)">'+
-      '<td style="padding:6px 8px"><span class="mono">'+o.cpn+'</span></td>'+
-      '<td style="padding:6px 8px"><span class="mono">'+o.ipn+'</span></td>'+
-      '<td style="padding:6px 8px">'+(o.qk||0)+' pcs</td>'+
-      '<td style="padding:6px 8px">'+(o.qb||0)+' pcs</td>'+
-      '<td style="padding:6px 8px;font-weight:600">'+(o.qc||0)+' pcs</td>'+
-      '<td style="padding:6px 8px">'+fU(o.price)+'</td>'+
-      '<td style="padding:6px 8px">'+lt+'</td></tr>';
-  }
-  skuT+='</table>';
-
-  var refs='<div class="dg">'+
-    df2('驗貨日期',pd.inspDate)+df2('訂單單號',pd.on||'—')+df2('請購單號',pd.rn||'—')+df2('採購單號',pd.pn||'—')+
-  '</div>';
-
-  var adj='';
-  if(pd.adjLog&&pd.adjLog.length){
-    adj='<div class="sl" style="margin-top:16px">Schedule Change Log</div>';
-    for(var j=0;j<pd.adjLog.length;j++){
-      var a=pd.adjLog[j];
-      adj+='<div style="font-size:12px;color:var(--muted);margin-bottom:6px;"><b>'+(a.dr||'—')+'</b> — New P/I: '+(a.nf||'—')+' | PC: '+(a.pc||'—')+' | TWX: '+(a.tw||'—')+(a.nt?' | '+a.nt:'')+'</div>';
+function switchListType(event, type) {
+    event.preventDefault();
+    
+    const depositContent = document.getElementById('list-deposit-content');
+    const loanContent = document.getElementById('list-loan-content');
+    const btnDeposit = document.getElementById('list-deposit-btn');
+    const btnLoan = document.getElementById('list-loan-btn');
+    
+    if (type === 'deposit') {
+        depositContent.style.display = 'block';
+        loanContent.style.display = 'none';
+        btnDeposit.style.background = '#3b82f6';
+        btnDeposit.style.color = 'white';
+        btnLoan.style.background = '#e5e7eb';
+        btnLoan.style.color = '#333';
+    } else {
+        depositContent.style.display = 'none';
+        loanContent.style.display = 'block';
+        btnDeposit.style.background = '#e5e7eb';
+        btnDeposit.style.color = '#333';
+        btnLoan.style.background = '#3b82f6';
+        btnLoan.style.color = 'white';
     }
-  }
-
-  var acts='<div class="ab">'+
-    '<button class="btn bw sm" onclick="openAdj(\''+pb+'\');event.stopPropagation()">Schedule Change</button>'+
-    (pd.phase===4?'<button class="btn bsc sm" onclick="moveSh(\''+pb+'\');event.stopPropagation()">Move to Shipped</button>':'')+
-  '</div>';
-
-  return '<div class="dp">'+ph+'<div class="sl">Phase Checklist</div>'+cl+
-    '<div class="sl" style="margin-top:16px">SKU Breakdown</div>'+skuT+
-    '<div class="sl">Refs + Inspection Date</div>'+refs+adj+acts+'</div>';
 }
 
-function df2(l,v){return '<div class="df"><label>'+l+'</label><div class="v">'+(v||'—')+'</div></div>';}
-
-function pcBox(pb,f,lbl,pd){
-  return '<div class="ci"><input type="checkbox" '+(pd[f]?'checked':'')+' onclick="setPF(\''+pb+'\',\''+f+'\',this.checked);event.stopPropagation()"><span>'+lbl+'</span></div>';
-}
-function pcDate(pb,f,lbl,pd){
-  var v=pd[f]||'';
-  return '<div class="ci">'+
-    '<input type="checkbox" '+(v?'checked':'')+' onclick="event.stopPropagation()" onchange="clrPF(\''+pb+'\',\''+f+'\',this)">'+
-    '<span>'+lbl+'</span>'+
-    '<input type="date" value="'+v+'" onclick="event.stopPropagation()" onchange="setPF(\''+pb+'\',\''+f+'\',this.value)" style="margin-left:8px">'+
-  '</div>';
-}
-function setPF(pb,f,v){getPO(pb)[f]=v;saveGit();renderOrders();}
-function clrPF(pb,f,el){if(!el.checked){getPO(pb)[f]='';saveGit();renderOrders();}}
-function setPhase(pb,p){getPO(pb).phase=p;saveGit();renderOrders();}
-
-function aFill(){var pr=fProd(document.getElementById('o_cpn').value.trim());if(pr){document.getElementById('o_ipn').value=pr.iPN||'';calcT();}}
-function calcT(){
-  var k=parseInt(document.getElementById('o_qk').value)||0,b=parseInt(document.getElementById('o_qb').value)||0,c=k+b;
-  document.getElementById('o_qc').value=c||'';
-  var pr=fProd(document.getElementById('o_cpn').value.trim());
-  if(pr){var p=c>=1000?(pr.p1000||''):(pr.p500||'');var el=document.getElementById('o_up');if(!el.dataset.ed&&p)el.value=Number(p).toFixed(2);}
-  reCalc();
-}
-function reCalc(){var c=parseInt(document.getElementById('o_qc').value)||0,p=parseFloat(document.getElementById('o_up').value)||0;document.getElementById('o_tot').value=(c&&p)?(c*p).toFixed(2):'';}
-function openOM(pf){
-  editOId=null;document.getElementById('omTitle').textContent='New Order';document.getElementById('cNote').classList.add('h');
-  clrOF();if(pf)fillOF(pf);resetFoot();document.getElementById('omModal').classList.add('op');
-}
-function editO(id){
-  var o=fOrd(id);if(!o)return;
-  editOId=id;var pd=getPO(o.po);
-  document.getElementById('omTitle').textContent='Edit Order';document.getElementById('cNote').classList.add('h');
-  fillOF(Object.assign({},o,{inspDate:pd.inspDate,on:pd.on,rn:pd.rn,pn:pd.pn}));
-  resetFoot();document.getElementById('omModal').classList.add('op');
-}
-function closeOM(){document.getElementById('omModal').classList.remove('op');editOId=null;}
-function clrOF(){
-  ['o_po','o_od','o_cpn','o_ipn','o_qk','o_qb','o_qc','o_fc','o_id','o_up','o_tot','o_on','o_rn','o_pn','o_nt']
-  .forEach(function(id){var e=document.getElementById(id);if(e){e.value='';delete e.dataset.ed;}});
-}
-function fillOF(o){
-  var s=function(id,v){var e=document.getElementById(id);if(e)e.value=v||'';};
-  s('o_po',o.po);s('o_od',o.od);s('o_cpn',o.cpn);s('o_ipn',o.ipn);
-  s('o_qk',o.qk);s('o_qb',o.qb);s('o_qc',o.qc);s('o_fc',o.fc);s('o_id',o.inspDate);
-  s('o_up',o.price?Number(o.price).toFixed(2):'');
-  s('o_tot',o.price&&o.qc?(parseFloat(o.price)*parseInt(o.qc)).toFixed(2):'');
-  s('o_on',o.on);s('o_rn',o.rn);s('o_pn',o.pn);s('o_nt',o.note);
-}
-function bldOF(){
-  var k=parseInt(gv('o_qk'))||0,b=parseInt(gv('o_qb'))||0;
-  return{po:gv('o_po'),od:gv('o_od'),cpn:gv('o_cpn'),ipn:gv('o_ipn'),qk:k,qb:b,qc:k+b,
-    fc:gv('o_fc'),inspDate:gv('o_id'),price:parseFloat(gv('o_up'))||'',
-    on:gv('o_on'),rn:gv('o_rn'),pn:gv('o_pn'),note:gv('o_nt')};
-}
-function saveO(){
-  var d=bldOF();if(!d.po||!d.cpn){alert('PO# and Customer P/N required.');return;}
-  var pd=getPO(d.po);
-  if(d.inspDate)pd.inspDate=d.inspDate;if(d.on)pd.on=d.on;if(d.rn)pd.rn=d.rn;if(d.pn)pd.pn=d.pn;
-  var o={id:editOId||uid(),po:d.po,od:d.od,cpn:d.cpn,ipn:d.ipn,qk:d.qk,qb:d.qb,qc:d.qc,fc:d.fc,price:d.price};
-  if(editOId){for(var i=0;i<S.orders.length;i++){if(S.orders[i].id===editOId){S.orders[i]=o;break;}}}
-  else S.orders.push(o);
-  closeOM();renderOrders();saveGit();
-}
-function delO(id){if(!confirm('Delete?'))return;S.orders=S.orders.filter(function(o){return o.id!==id;});renderOrders();saveGit();}
-function moveSh(pb){
-  if(!confirm('Move all orders for '+pb+' to Shipped?'))return;
-  var r=[],m=[];
-  for(var i=0;i<S.orders.length;i++){if(S.orders[i].po===pb)m.push(S.orders[i]);else r.push(S.orders[i]);}
-  S.orders=r;for(var j=0;j<m.length;j++)S.shipped.push(m[j]);
-  if(expPO===pb)expPO=null;renderOrders();saveGit();
-}
-function resetFoot(){
-  document.getElementById('omFoot').innerHTML=
-    '<button class="btn bs" onclick="closeOM()">Cancel</button>'+
-    '<button class="btn bp" onclick="saveO()">Save Order</button>';
+function prevMonth() {
+    currentMonth.setMonth(currentMonth.getMonth() - 1);
+    renderCalendar();
 }
 
-function capRefs(){lastRefs={on:gv('o_on'),rn:gv('o_rn'),pn:gv('o_pn')};}
-function doSave(){
-  var d=bldOF();
-  var pd=getPO(d.po);
-  if(d.inspDate)pd.inspDate=d.inspDate;if(d.on)pd.on=d.on;if(d.rn)pd.rn=d.rn;if(d.pn)pd.pn=d.pn;
-  S.orders.push({id:uid(),po:d.po,od:d.od,cpn:d.cpn,ipn:d.ipn,qk:d.qk,qb:d.qb,qc:d.qc,fc:d.fc,price:d.price});
-}
-function sNext(){capRefs();doSave();pIdx++;openQ(pQueue,pIdx);}
-function sFin(){capRefs();doSave();closeOM();resetFoot();renderOrders();saveGit();}
-function openQ(q,idx){
-  pQueue=q;pIdx=idx;if(idx>=q.length)return;
-  var tot=q.length,it=q[idx];
-  document.getElementById('omTitle').textContent='Confirm Order ('+(idx+1)+' of '+tot+') — '+it.cpn;
-  editOId=null;clrOF();
-  if(idx>0){
-    if(!it.on)it.on=lastRefs.on;if(!it.rn)it.rn=lastRefs.rn;if(!it.pn)it.pn=lastRefs.pn;
-    if(!it.inspDate&&q[0].inspDate)it.inspDate=q[0].inspDate;
-    document.getElementById('cNote').classList.remove('h');
-  } else {
-    var ep=getPO(it.po);
-    if(!it.on&&ep.on)it.on=ep.on;if(!it.rn&&ep.rn)it.rn=ep.rn;if(!it.pn&&ep.pn)it.pn=ep.pn;
-    if(!it.inspDate&&ep.inspDate)it.inspDate=ep.inspDate;
-    document.getElementById('cNote').classList.add('h');
-  }
-  fillOF(it);
-  var hn=idx<tot-1;
-  document.getElementById('omFoot').innerHTML=
-    '<button class="btn bs" onclick="closeOM()">Cancel All</button>'+
-    (hn?'<button class="btn bs" onclick="sNext()">Save + Next</button>':'')+
-    '<button class="btn bp" onclick="sFin()">'+(idx===tot-1?'Save + Finish':'Save + Done')+'</button>';
-  document.getElementById('omModal').classList.add('op');
+function nextMonth() {
+    currentMonth.setMonth(currentMonth.getMonth() + 1);
+    renderCalendar();
 }
 
-function parsePO(e){
-  var file=e.target.files[0];if(!file)return;
-  var reader=new FileReader();
-  reader.onload=function(ev){
-    try{
-      var wb=XLSX.read(ev.target.result,{type:'binary',cellDates:true,cellText:false});
-      var ws=wb.Sheets[wb.SheetNames[0]];
-      var rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,dateNF:'yyyy-mm-dd',defval:''});
-      var hRow=-1,cm={};
-      for(var i=0;i<Math.min(rows.length,20);i++){
-        for(var j=0;j<(rows[i]||[]).length;j++){
-          var c=String(rows[i][j]||'').replace(/[\s.]/g,'').toUpperCase();
-          if(c==='PONO'||c.indexOf('PON')===0){hRow=i;break;}
+function todayMonth() {
+    currentMonth = new Date();
+    renderCalendar();
+}
+
+// 計算貸款在該日期是否要扣款
+// 計算貸款在特定日期的利息和本金（月曆和現金流共用）
+function calculateLoanPaymentForDay(loan, year, month, day) {
+    const loanStart = new Date(loan.startDate);
+    const loanEnd = new Date(loan.endDate);
+    const checkDate = new Date(year, month, day);
+    
+    // 檢查日期是否在貸款期間內
+    if (checkDate < loanStart || checkDate > loanEnd) {
+        return null;
+    }
+    
+    // 判斷扣款日
+    let paymentDays = [];
+    if (loan.bank === '國泰世華') {
+        paymentDays = [16];
+    } else if (loan.bank === '兆豐銀行') {
+        paymentDays = [7, 25];
+    } else {
+        const endDay = new Date(loan.endDate).getDate();
+        paymentDays = [endDay];
+    }
+    
+    // 檢查當日是否為扣款日
+    if (!paymentDays.includes(day)) {
+        return null;
+    }
+    
+    // === 特殊處理：id 2009（兆豐銀行 20,000,000，本金固定 555,555） ===
+    if (loan.id === 2009) {
+        const startPayDate = new Date('2026-06-07'); // 6月7日開始還本
+        
+        // 計算該月初的餘額
+        const monthStart = new Date(year, month, 1);
+        let monthsRepaid = 0; // 已還月數
+        
+        if (monthStart > startPayDate) {
+            // 從 6 月開始計算已還月數
+            const repayStart = new Date('2026-06-01');
+            monthsRepaid = (year - repayStart.getFullYear()) * 12 + (month - repayStart.getMonth());
+            if (day < 7 && month >= 6 && (year > 2026 || month > 5)) {
+                // 若當日在 7 號之前，本月還沒扣本金
+                monthsRepaid--;
+            }
         }
-        if(hRow>-1)break;
-      }
-      if(hRow===-1)hRow=10;
-      var hdrs=rows[hRow]||[];
-      for(var k=0;k<hdrs.length;k++){
-        var h=String(hdrs[k]||'').trim().toUpperCase().replace(/[\s\u3000]+/g,' ');
-        if(h.replace(/[\s.]/g,'').indexOf('PONO')>-1)cm.po=k;
-        if(h==='DESCRIPTION')cm.desc=k;
-        if(h.replace(/[^A-Z]/g,'').indexOf('QT')>-1)cm.qty=k;
-        if(h==='DESTINATION')cm.dest=k;
-        if(h.indexOf('P/I')>-1)cm.fc=k;
-        if(h.indexOf('INSPECTION')>-1&&h.indexOf('DATE')>-1)cm.id=k;
-      }
-      var grps={};
-      for(var r=hRow+1;r<rows.length;r++){
-        var row=rows[r];if(!row||!row[cm.po])continue;
-        var pf=String(row[cm.po]).trim();
-        var cpn=cm.desc!==undefined?String(row[cm.desc]||'').trim():'';
-        if(!cpn||!pf)continue;
-        var bm=pf.match(/^(.+)-\d+$/),pb=bm?bm[1]:pf,key=pb+'__'+cpn;
-        if(!grps[key])grps[key]={pb:pb,cpn:cpn,qk:0,qb:0,fc:'',id:''};
-        var g=grps[key];
-        var qty=parseInt(String(row[cm.qty]||'').replace(/[^0-9]/g,''))||0;
-        var dest=cm.dest!==undefined?String(row[cm.dest]||''):'';
-        if(dest.indexOf('\u795e\u5948\u5ddd')>-1||dest.indexOf('105_105')>-1)g.qk+=qty;
-        else if(dest.indexOf('\u5175\u5eab')>-1||dest.indexOf('107_107')>-1)g.qb+=qty;
-        else{var sn=parseInt((pf.replace(pb,'')||'').replace(/[^0-9]/g,''))||0;if(sn%2===1)g.qk+=qty;else g.qb+=qty;}
-        if(!g.fc&&cm.fc!==undefined&&row[cm.fc])g.fc=pDate(row[cm.fc]);
-        if(!g.id&&cm.id!==undefined&&row[cm.id])g.id=pDate(row[cm.id]);
-      }
-      var keys=Object.keys(grps);if(!keys.length){alert('No line items found.');return;}
-      lastRefs={on:'',rn:'',pn:''};
-      var pfs=[];
-      for(var ki=0;ki<keys.length;ki++){
-        var g2=grps[keys[ki]],pr=fProd(g2.cpn),comb=g2.qk+g2.qb;
-        var price=pr?(comb>=1000?(pr.p1000||''):(pr.p500||'')):'';
-        pfs.push({po:g2.pb,cpn:g2.cpn,ipn:pr?pr.iPN:'',qk:g2.qk,qb:g2.qb,qc:comb,
-          fc:g2.fc,inspDate:g2.id,price:price,od:new Date().toISOString().slice(0,10),on:'',rn:'',pn:''});
-      }
-      var sid='';
-      for(var fi=0;fi<pfs.length;fi++)if(pfs[fi].inspDate){sid=pfs[fi].inspDate;break;}
-      if(sid)for(var fi2=0;fi2<pfs.length;fi2++)pfs[fi2].inspDate=sid;
-      openQ(pfs,0);
-    }catch(err){alert('Error: '+err.message);}
-  };
-  reader.readAsBinaryString(file);
-  e.target.value='';
+        
+        const monthlyPrincipal = 555555;
+        const currentBalance = Math.max(0, loan.amount - (monthsRepaid * monthlyPrincipal));
+        const monthlyInterest = (currentBalance * loan.rate / 100) / 12;
+        
+        let dayInterest = monthlyInterest;
+        let dayPrincipal = 0;
+        let type = '利息';
+        
+        if (day === 7) {
+            // 7 號扣本金
+            dayInterest = 0;
+            dayPrincipal = monthlyPrincipal;
+            type = '本金';
+        } else {
+            // 25 號扣利息
+            dayPrincipal = 0;
+            type = '利息';
+        }
+        
+        return {
+            interest: dayInterest,
+            principal: dayPrincipal,
+            type: type,
+            total: dayInterest + dayPrincipal
+        };
+    }
+    
+    // === 一般計算邏輯 ===
+    const monthlyInterest = (loan.amount * loan.rate / 100) / 12;
+    const months = Math.ceil((loanEnd - loanStart) / (1000 * 60 * 60 * 24 * 30));
+    const monthlyPrincipal = loan.type === 'monthly-principal' ? loan.amount / months : 0;
+    
+    let dayInterest = monthlyInterest;
+    let dayPrincipal = monthlyPrincipal;
+    let type = loan.type === 'monthly-interest' ? '利息' : '本金+利息';
+    
+    // 兆豐銀行特殊處理
+    if (loan.bank === '兆豐銀行') {
+        if (day === 7) {
+            dayInterest = 0;
+            type = '本金';
+        } else {
+            dayPrincipal = 0;
+            type = '利息';
+        }
+    }
+    
+    return {
+        interest: dayInterest,
+        principal: dayPrincipal,
+        type: type,
+        total: dayInterest + dayPrincipal
+    };
 }
 
-function openAdj(pb){
-  adjPO=pb;
-  ['a_dr','a_nf','a_nt'].forEach(function(i){document.getElementById(i).value='';});
-  ['a_pc','a_cr','a_tw','a_br'].forEach(function(i){document.getElementById(i).value='';});
-  document.getElementById('adjModal').classList.add('op');
-}
-function closeAdj(){document.getElementById('adjModal').classList.remove('op');adjPO=null;}
-function saveAdj(){
-  var pd=getPO(adjPO);if(!pd.adjLog)pd.adjLog=[];
-  var en={dr:document.getElementById('a_dr').value,nf:document.getElementById('a_nf').value,
-    pc:document.getElementById('a_pc').value,cr:document.getElementById('a_cr').value,
-    tw:document.getElementById('a_tw').value,br:document.getElementById('a_br').value,
-    nt:document.getElementById('a_nt').value};
-  if(en.nf)for(var i=0;i<S.orders.length;i++)if(S.orders[i].po===adjPO)S.orders[i].fc=en.nf;
-  pd.adjLog.push(en);closeAdj();renderOrders();saveGit();
-}
-
-function onFx(){S.fxRate=document.getElementById('fxRate').value;renderProds();saveGit();}
-function updUSD(){var u=v2u(document.getElementById('f_pc').value);document.getElementById('f_pu').value=u?'$'+u:'—';}
-function renderProds(){
-  var el=document.getElementById('fxRate');if(el)el.value=S.fxRate||'';
-  var tb=document.getElementById('pBody');if(!tb)return;
-  if(!S.products.length){tb.innerHTML='<tr><td colspan="9" class="es">No products.</td></tr>';return;}
-  var html='';
-  for(var i=0;i<S.products.length;i++){
-    var p=S.products[i],u=v2u(p.pc);
-    html+='<tr>'+
-      '<td><span class="mono">'+p.custPN+'</span></td>'+
-      '<td><span class="mono">'+p.iPN+'</span></td>'+
-      '<td><span class="mono">'+(p.sku||'—')+'</span></td>'+
-      '<td style="color:var(--muted);white-space:normal">'+(p.desc||'—')+'</td>'+
-      '<td><div class="pb">'+
-        '<div class="pr"><span class="ti">500 pcs</span><span class="pv">'+fU(p.p500)+'</span></div>'+
-        '<div class="pr"><span class="ti">1000 pcs</span><span class="pv">'+fU(p.p1000)+'</span></div>'+
-      '</div></td>'+
-      '<td><div class="vnd">'+fV(p.pc)+'</div>'+(u?'<div class="ue">≈ $'+u+'</div>':'')+'</td>'+
-      '<td><span class="bdg '+(p.status==='Active'?'bac':'bdc')+'">'+p.status+'</span></td>'+
-      '<td style="max-width:120px;white-space:normal;font-size:12px;color:var(--muted)">'+(p.note||'—')+'</td>'+
-      '<td><div class="g8">'+
-        '<button class="btn bs sm" onclick="editP(\''+p.id+'\')">Edit</button>'+
-        '<button class="btn bd sm" onclick="delP(\''+p.id+'\')">Del</button>'+
-      '</div></td></tr>';
-  }
-  tb.innerHTML=html;
-}
-function openPM(id){
-  editPId=id||null;document.getElementById('pmTitle').textContent=id?'Edit Product':'Add Product';
-  var p={};if(id){for(var i=0;i<S.products.length;i++){if(S.products[i].id===id){p=S.products[i];break;}}}
-  document.getElementById('f_cp').value=p.custPN||'';document.getElementById('f_ip').value=p.iPN||'';
-  document.getElementById('f_sk').value=p.sku||'';document.getElementById('f_de').value=p.desc||'';
-  document.getElementById('f_p5').value=p.p500||'';document.getElementById('f_p10').value=p.p1000||'';
-  document.getElementById('f_pc').value=p.pc||'';document.getElementById('f_st').value=p.status||'Active';
-  document.getElementById('f_nt').value=p.note||'';
-  var u=v2u(p.pc);document.getElementById('f_pu').value=u?'$'+u:'—';
-  document.getElementById('pmModal').classList.add('op');
-}
-function editP(id){openPM(id);}
-function closePM(){document.getElementById('pmModal').classList.remove('op');editPId=null;}
-function saveP(){
-  var cp=document.getElementById('f_cp').value.trim(),ip=document.getElementById('f_ip').value.trim();
-  if(!cp||!ip){alert('Customer P/N and Internal P/N required.');return;}
-  var p={id:editPId||uid(),custPN:cp,iPN:ip,sku:document.getElementById('f_sk').value.trim(),
-    desc:document.getElementById('f_de').value.trim(),p500:document.getElementById('f_p5').value,
-    p1000:document.getElementById('f_p10').value,pc:document.getElementById('f_pc').value,
-    status:document.getElementById('f_st').value,note:document.getElementById('f_nt').value.trim()};
-  if(editPId){for(var i=0;i<S.products.length;i++){if(S.products[i].id===editPId){S.products[i]=p;break;}}}
-  else S.products.push(p);
-  closePM();renderProds();saveGit();
-}
-function delP(id){if(!confirm('Delete?'))return;S.products=S.products.filter(function(x){return x.id!==id;});renderProds();saveGit();}
-
-function openSettings(){
-  var g=JSON.parse(localStorage.getItem('ghc')||'{}');
-  document.getElementById('c_u').value=g.user||'';
-  document.getElementById('c_r').value=g.repo||'elecom-tracker';
-  document.getElementById('c_t').value=g.token||'';
-  document.getElementById('setModal').classList.add('op');
-}
-function closeSet(){document.getElementById('setModal').classList.remove('op');}
-function saveGH(){
-  GH.user=document.getElementById('c_u').value.trim();
-  GH.repo=document.getElementById('c_r').value.trim();
-  GH.token=document.getElementById('c_t').value.trim();
-  if(!GH.user||!GH.repo||!GH.token){ghMsg('Fill in all fields.','e');return;}
-  localStorage.setItem('ghc',JSON.stringify(GH));testGH();
-}
-function testGH(){
-  ghMsg('Testing...','i');
-  fetch('https://api.github.com/repos/'+GH.user+'/'+GH.repo,{headers:{Authorization:'token '+GH.token}})
-  .then(function(r){
-    if(r.ok){ghMsg('Connected!','s');setSt(true);}
-    else{r.json().then(function(e){ghMsg('Error: '+e.message,'e');});setSt(false);}
-  }).catch(function(){ghMsg('Network error.','e');});
-}
-function saveGit(){
-  var g=JSON.parse(localStorage.getItem('ghc')||'{}');
-  if(!g.token||!g.user||!g.repo)return;
-  GH=g;
-  var cont=btoa(unescape(encodeURIComponent(JSON.stringify(S,null,2))));
-  fetch('https://api.github.com/repos/'+GH.user+'/'+GH.repo+'/contents/data.json',{headers:{Authorization:'token '+GH.token}})
-  .then(function(r){return r.ok?r.json():null;})
-  .then(function(d){
-    var body={message:'Update',content:cont};if(d)body.sha=d.sha;
-    return fetch('https://api.github.com/repos/'+GH.user+'/'+GH.repo+'/contents/data.json',{
-      method:'PUT',headers:{Authorization:'token '+GH.token,'Content-Type':'application/json'},
-      body:JSON.stringify(body)});
-  })
-  .then(function(r){if(r&&r.ok){setSt(true);flash();}else setSt(false);})
-  .catch(function(){setSt(false);});
-}
-function loadGH(){
-  var g=JSON.parse(localStorage.getItem('ghc')||'{}');
-  if(!g.token){ghMsg('Save config first.','e');return;}
-  GH=g;ghMsg('Loading...','i');
-  fetch('https://api.github.com/repos/'+GH.user+'/'+GH.repo+'/contents/data.json',{headers:{Authorization:'token '+GH.token}})
-  .then(function(r){
-    if(r.ok){return r.json().then(function(d){
-      S=JSON.parse(decodeURIComponent(escape(atob(d.content))));
-      if(!S.po)S.po={};
-      if(!S.orders||!Array.isArray(S.orders))S.orders=[];
-      renderProds();renderOrders();ghMsg('Loaded!','s');setSt(true);
-    });}else ghMsg('No data file yet.','i');
-  }).catch(function(){ghMsg('Failed.','e');});
-}
-function setSt(ok){var e=document.getElementById('syncSt');e.textContent=ok?'● Synced':'● Sync error';e.className='sync '+(ok?'ok':'err');}
-function flash(){var e=document.getElementById('syncSt');e.textContent='Saving...';setTimeout(function(){e.textContent='● Synced';e.className='sync ok';},1200);}
-function ghMsg(m,t){var e=document.getElementById('ghMsg');if(!e)return;e.textContent=m;e.style.color=t==='e'?'var(--red)':t==='s'?'var(--green)':'var(--pd)';}
-function expJ(){
-  var b=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
-  var a=document.createElement('a');a.href=URL.createObjectURL(b);
-  a.download='elecom-'+new Date().toISOString().slice(0,10)+'.json';a.click();
-}
-function impJ(e){
-  var f=e.target.files[0];if(!f)return;
-  var r=new FileReader();
-  r.onload=function(ev){
-    try{
-      S=JSON.parse(ev.target.result);
-      if(!S.po)S.po={};
-      if(!S.orders||!Array.isArray(S.orders))S.orders=[];
-      renderProds();renderOrders();alert('Imported.');
-    }catch(err){alert('Invalid JSON.');}
-  };
-  r.readAsText(f);e.target.value='';
+function getLoanPaymentsForDay(year, month, day) {
+    const payments = [];
+    
+    loans.forEach(l => {
+        const payment = calculateLoanPaymentForDay(l, year, month, day);
+        if (payment) {
+            payments.push({
+                bank: l.bank,
+                type: payment.type,
+                loanId: l.id,
+                interest: payment.interest,
+                principal: payment.principal,
+                total: payment.total
+            });
+        }
+    });
+    
+    return payments;
 }
 
-(function(){
-  var g=JSON.parse(localStorage.getItem('ghc')||'{}');
-  if(g.user&&g.repo&&g.token){
-    GH=g;setSt(true);
-    fetch('https://api.github.com/repos/'+GH.user+'/'+GH.repo+'/contents/data.json',{headers:{Authorization:'token '+GH.token}})
-    .then(function(r){return r.ok?r.json():null;})
-    .then(function(d){
-      if(d){
-        S=JSON.parse(decodeURIComponent(escape(atob(d.content))));
-        if(!S.po)S.po={};
-        if(!S.orders||!Array.isArray(S.orders))S.orders=[];
-        setSt(true);
-      }
-      renderProds();renderOrders();
-    })
-    .catch(function(){setSt(false);renderProds();renderOrders();});
-  }else{renderProds();renderOrders();}
-})();
+function renderCalendar() {
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+    
+    document.getElementById('calendarTitle').textContent = `${year} 年 ${month + 1} 月`;
+    
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+    
+    let html = '';
+    
+    // 上個月的日期
+    const prevMonth = month === 0 ? 11 : month - 1;
+    const prevYear = month === 0 ? year - 1 : year;
+    const daysInPrevMonth = new Date(prevYear, prevMonth + 1, 0).getDate();
+    
+    for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+        const day = daysInPrevMonth - i;
+        html += `<div class="calendar-day other-month"><div class="day-number">${day}</div></div>`;
+    }
+    
+    // 當月日期
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const dayDeposits = deposits.filter(d => d.endDate === dateStr);
+        const dayLoans = getLoanPaymentsForDay(year, month, day);
+        const dayNotes = notes.filter(n => n.date === dateStr);
+        
+        let eventHtml = '';
+        
+        // 顯示定期存款
+        dayDeposits.forEach(dep => {
+            const days = daysUntil(dep.endDate);
+            let statusClass = 'deposit'; // 預設淺綠色
+            if (days <= 0) statusClass = 'deposit danger';
+            else if (days <= 7) statusClass = 'deposit warning';
+            
+            const displayText = `📅 ${dep.bankName} 到期`;
+            
+            // 懸停提示：顯示本金+幣別+金額
+            const currency = dep.currency || 'TWD';
+            const tooltipText = `本金 ${currency} $${dep.amount.toLocaleString()}`;
+            
+            eventHtml += `<div class="day-event ${statusClass}" title="${tooltipText}">${displayText}</div>`;
+        });
+
+        // 顯示貸款扣款日（過濾掉金額為 0 的）
+        dayLoans.filter(loan => loan.total > 0).forEach(loan => {
+            // 金額無條件進入法到千元
+            const amountInThousands = Math.ceil(loan.total / 1000) * 1000;
+            const displayText = `🏦 ${loan.bank} $${amountInThousands.toLocaleString()}`;
+            
+            // 懸停提示：顯示利息或本金+利息詳細信息
+            let tooltipText = '';
+            if (loan.type === '利息') {
+                tooltipText = `利息 NT$${Math.round(loan.interest)}`;
+            } else {
+                tooltipText = `本金 NT$${Math.round(loan.principal)} + 利息 NT$${Math.round(loan.interest)}`;
+            }
+            
+            eventHtml += `<div class="day-event loan" title="${tooltipText}">${displayText}</div>`;
+        });
+
+        // 顯示備註
+        dayNotes.forEach(note => {
+            const colorClass = `note-${note.color}`;
+            eventHtml += `<div class="day-event ${colorClass}" title="${note.content}">${note.content}</div>`;
+        });
+        
+        html += `<div class="calendar-day"><div class="day-number">${day}</div><div class="day-events">${eventHtml}</div></div>`;
+    }
+    
+    // 下個月的日期
+    const remainingDays = 42 - (startingDayOfWeek + daysInMonth);
+    for (let day = 1; day <= remainingDays; day++) {
+        html += `<div class="calendar-day other-month"><div class="day-number">${day}</div></div>`;
+    }
+    
+    document.getElementById('calendarDays').innerHTML = html;
+}
+
+function filterCurrency(curr) {
+    currentCurrencyFilter = curr;
+    document.querySelectorAll('.currency-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    renderTable();
+}
+
+function addDeposit() {
+    const bankName = document.getElementById('bankName').value;
+    const currency = document.getElementById('currency').value;
+    const amount = parseFloat(document.getElementById('amount').value);
+    const rate = parseFloat(document.getElementById('rate').value);
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const notes = document.getElementById('notes').value;
+
+    if (!bankName || !amount || !rate || !startDate || !endDate) {
+        alert('請填寫所有必填欄位');
+        return;
+    }
+
+    const deposit = {
+        id: Date.now(),
+        bankName,
+        currency,
+        amount: Math.round(amount * 100) / 100,
+        rate: Math.round(rate * 100) / 100,
+        startDate,
+        endDate,
+        notes: notes || ''
+    };
+
+    deposits.push(deposit);
+    saveDeposits();
+    renderCalendar();
+    renderDashboard();
+    renderTable();
+    
+    // 清空表單
+    document.getElementById('bankName').value = '';
+    document.getElementById('currency').value = 'USD';
+    document.getElementById('amount').value = '';
+    document.getElementById('rate').value = '';
+    document.getElementById('startDate').value = '';
+    document.getElementById('endDate').value = '';
+    document.getElementById('notes').value = '';
+    
+    alert('新增成功！');
+}
+
+function deleteDeposit(id) {
+    if (confirm('確定要刪除此筆記錄嗎？')) {
+        deposits = deposits.filter(d => d.id !== id);
+        saveDeposits();
+        renderCalendar();
+        renderDashboard();
+        renderTable();
+    }
+}
+
+function editNotes(id, currentNotes) {
+    currentEditingNoteId = id;
+    const deposit = deposits.find(d => d.id === id);
+    if (deposit) {
+        document.getElementById('notesDetailBank').textContent = `${deposit.bankName} (${deposit.currency})`;
+        document.getElementById('notesInput').value = currentNotes;
+        document.getElementById('notesModal').style.display = 'flex';
+        document.getElementById('notesInput').focus();
+    }
+}
+
+function closeNotesModal() {
+    document.getElementById('notesModal').style.display = 'none';
+    currentEditingNoteId = null;
+}
+
+function saveNotes() {
+    if (currentEditingNoteId === null) return;
+    
+    const newNotes = document.getElementById('notesInput').value;
+    const deposit = deposits.find(d => d.id === currentEditingNoteId);
+    
+    if (deposit) {
+        deposit.notes = newNotes;
+        saveDeposits();
+        renderDashboard();
+        closeNotesModal();
+    }
+}
+
+function renderDashboard() {
+    // 儀表板已刪除，此函數保留以避免錯誤
+}
+
+function renderTable() {
+    const tbody = document.getElementById('tableBody');
+    let filtered = currentCurrencyFilter === 'ALL' ? deposits : deposits.filter(d => d.currency === currentCurrencyFilter);
+    
+    // 分類：已到期、進行中、其他
+    const expired = [];
+    const active = [];
+    
+    filtered.forEach(d => {
+        const days = daysUntil(d.endDate);
+        if (days <= 0) {
+            expired.push({ deposit: d, days });
+        } else {
+            active.push({ deposit: d, days });
+        }
+    });
+    
+    // 進行中的按剩餘天數排序（少到多）
+    active.sort((a, b) => a.days - b.days);
+    
+    // 合併：進行中 + 已到期
+    const sorted = [...active, ...expired];
+    
+    tbody.innerHTML = sorted.map(item => {
+        const d = item.deposit;
+        const interest = calculateInterest(d.amount, d.rate, d.startDate, d.endDate);
+        const days = item.days;
+        let status = '進行中';
+        
+        if (days <= 0) status = '已到期';
+        else if (days <= 7) status = `即將到期 (${days}天)`;
+        else status = `剩 ${days} 天`;
+
+        // 根據幣別決定小數位數
+        const isForex = d.currency !== 'TWD';
+        const decimals = isForex ? 2 : 0;
+
+        return `
+            <tr>
+                <td>${d.bankName}</td>
+                <td><strong>${d.currency}</strong></td>
+                <td>${d.amount.toLocaleString('en-US', {minimumFractionDigits: decimals, maximumFractionDigits: decimals})}</td>
+                <td>${d.rate}%</td>
+                <td>${d.startDate}</td>
+                <td>${d.endDate}</td>
+                <td>${interest.toLocaleString('en-US', {minimumFractionDigits: decimals, maximumFractionDigits: decimals})}</td>
+                <td>${(d.amount + interest).toLocaleString('en-US', {minimumFractionDigits: decimals, maximumFractionDigits: decimals})}</td>
+                <td>${d.notes || '-'}</td>
+                <td>${status}</td>
+                <td><button class="btn btn-sm" onclick="openEditDepositModal(${d.id})">變更</button></td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function exportToExcel() {
+    const wsData = [['銀行名稱', '幣別', '金額', '利率', '起存日', '到期日', '利息', '本利和', '備註', '狀態']];
+    deposits.forEach(d => {
+        const interest = calculateInterest(d.amount, d.rate, d.startDate, d.endDate);
+        const days = daysUntil(d.endDate);
+        let status = days <= 0 ? '已到期' : days <= 7 ? `即將到期 (${days}天)` : `剩 ${days} 天`;
+        
+        const isForex = d.currency !== 'TWD';
+        const amount = isForex ? d.amount.toFixed(2) : d.amount.toFixed(0);
+        const interestVal = isForex ? interest.toFixed(2) : interest.toFixed(0);
+        const totalVal = isForex ? (d.amount + interest).toFixed(2) : (d.amount + interest).toFixed(0);
+        
+        wsData.push([d.bankName, d.currency, amount, d.rate, d.startDate, d.endDate, interestVal, totalVal, d.notes || '', status]);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, '定期存款');
+    XLSX.writeFile(wb, '定期存款追蹤_' + new Date().toISOString().split('T')[0] + '.xlsx');
+}
+
+// ===== 匯入文件 =====
+function processFile(file) {
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet);
+            
+            if (jsonData.length === 0) {
+                alert('檔案為空，無法匯入');
+                return;
+            }
+            
+            // 偵測是定期存款還是貸款
+            const firstRow = jsonData[0];
+            const isLoan = firstRow['銀行借編'] || firstRow['借款金額'] || firstRow['年利率'];
+            
+            if (isLoan) {
+                // 匯入貸款
+                importLoans(jsonData);
+            } else {
+                // 匯入定期存款
+                importDeposits(jsonData);
+            }
+        } catch (error) {
+            alert('匯入失敗：' + error.message);
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function importDeposits(data) {
+    // 根據欄位名稱映射數據
+    const newDeposits = data.map((row, index) => ({
+        id: Math.max(...deposits.map(d => d.id), 0) + index + 1,
+        bankName: row['銀行'] || row['銀行名稱'] || '',
+        amount: parseFloat(row['金額'] || row['金額(原幣)'] || 0),
+        rate: parseFloat(row['利率'] || row['年利率'] || 0),
+        startDate: row['起存日'] || row['原借日'] || new Date().toISOString().split('T')[0],
+        endDate: row['到期日'] || '',
+        currency: row['幣別'] || 'TWD',
+        notes: row['備註'] || ''
+    })).filter(d => d.bankName && d.endDate);
+    
+    if (newDeposits.length === 0) {
+        alert('無法識別資料格式');
+        return;
+    }
+    
+    deposits = [...deposits, ...newDeposits];
+    saveDeposits();
+    renderTable();
+    renderCalendar();
+    alert(`成功匯入 ${newDeposits.length} 筆定期存款`);
+}
+
+function importLoans(data) {
+    // 根據欄位名稱映射數據
+    const newLoans = data.map((row, index) => ({
+        id: Math.max(...loans.map(l => l.id), 0) + index + 1,
+        bank: row['銀行'] || row['銀行名稱'] || '',
+        amount: parseFloat(row['金額'] || row['借款金額'] || row['借款餘額(原幣)'] || 0),
+        rate: parseFloat(row['利率'] || row['年利率'] || 0),
+        startDate: row['借款日'] || row['原借日'] || new Date().toISOString().split('T')[0],
+        endDate: row['到期日'] || '',
+        type: row['還款方式'] === '利息' ? 'monthly-interest' : 'monthly-principal',
+        monthlyPayment: 0,
+        notes: row['備註'] || ''
+    })).filter(l => l.bank && l.endDate);
+    
+    if (newLoans.length === 0) {
+        alert('無法識別資料格式');
+        return;
+    }
+    
+    loans = [...loans, ...newLoans];
+    localStorage.loans = JSON.stringify(loans);
+    renderLoanTable();
+    renderCalendar();
+    renderMonthlyPayment();
+    alert(`成功匯入 ${newLoans.length} 筆貸款`);
+}
+
+function printReport() {
+    window.print();
+}
+
+function clearAll() {
+    if (confirm('確定要清空所有記錄嗎？此操作無法復原。')) {
+        deposits = [];
+        saveDeposits();
+        renderCalendar();
+        renderDashboard();
+        renderTable();
+    }
+}
+
+function addNote() {
+    const content = document.getElementById('noteContent').value;
+    const date = document.getElementById('noteDate').value;
+    const color = document.getElementById('noteColor').value;
+
+    if (!content || !date) {
+        alert('請填寫備註內容和日期');
+        return;
+    }
+
+    const note = {
+        id: Date.now(),
+        content,
+        date,
+        color
+    };
+
+    notes.push(note);
+    saveDeposits();
+    renderCalendar();
+    renderNotesList();
+    
+    // 清空表單
+    document.getElementById('noteContent').value = '';
+    document.getElementById('noteDate').value = '';
+    document.getElementById('noteColor').value = 'blue';
+    
+    alert('備註已新增到月曆！');
+}
+
+function deleteNote(id) {
+    if (confirm('確定要刪除此備註嗎？')) {
+        notes = notes.filter(n => n.id !== id);
+        saveDeposits();
+        renderCalendar();
+        renderNotesList();
+    }
+}
+
+function renderNotesList() {
+    const notesList = document.getElementById('notesList');
+    
+    if (notes.length === 0) {
+        notesList.innerHTML = '<div class="empty-state"><p>📭 尚無備註</p></div>';
+        return;
+    }
+
+    const colorNames = {
+        'blue': '🔵 藍色',
+        'green': '🟢 綠色',
+        'yellow': '🟡 黃色',
+        'red': '🔴 紅色',
+        'purple': '🟣 紫色'
+    };
+
+    // 按日期排序
+    const sortedNotes = [...notes].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    notesList.innerHTML = sortedNotes.map(note => `
+        <div class="deposit-card" style="border-left-color: var(--note-color); border-left-width: 4px;">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">${note.content}</div>
+                    <div class="card-meta" style="margin-top: 6px;">
+                        <span class="card-badge badge-currency">📅 ${note.date}</span>
+                        <span class="card-badge badge-normal">${colorNames[note.color]}</span>
+                    </div>
+                </div>
+                <button class="btn btn-sm" onclick="deleteNote(${note.id})">🗑️ 刪除</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// 在初始化時設定日期預設值
+function setNoteDateDefault() {
+    document.getElementById('noteDate').valueAsDate = new Date();
+}
+
+// 貸款相關函數
+function addLoan() {
+    const bank = document.getElementById('loanBank').value;
+    const amount = parseFloat(document.getElementById('loanAmount').value);
+    const rate = parseFloat(document.getElementById('loanRate').value);
+    const startDate = document.getElementById('loanStartDate').value;
+    const endDate = document.getElementById('loanEndDate').value;
+    const type = document.getElementById('loanType').value;
+    const monthlyPayment = parseFloat(document.getElementById('loanMonthlyPayment').value) || 0;
+    const notes = document.getElementById('loanNotes').value;
+
+    if (!bank || !amount || !rate || !startDate || !endDate) {
+        alert('請填寫所有必填欄位');
+        return;
+    }
+
+    const loan = {
+        id: Date.now(),
+        bank,
+        amount: Math.round(amount * 100) / 100,
+        rate: Math.round(rate * 100) / 100,
+        startDate,
+        endDate,
+        type,
+        monthlyPayment: Math.round(monthlyPayment * 100) / 100,
+        notes: notes || ''
+    };
+
+    loans.push(loan);
+    saveDeposits();
+    renderLoanDashboard();
+    renderLoanTable();
+    renderMonthlyPayment();
+    
+    // 清空表單
+    document.getElementById('loanBank').value = '';
+    document.getElementById('loanAmount').value = '';
+    document.getElementById('loanRate').value = '';
+    document.getElementById('loanStartDate').value = '';
+    document.getElementById('loanEndDate').value = '';
+    document.getElementById('loanType').value = 'monthly-interest';
+    document.getElementById('loanMonthlyPayment').value = '';
+    document.getElementById('loanNotes').value = '';
+    
+    alert('貸款已新增！');
+}
+
+function deleteLoan(id) {
+    if (confirm('確定要刪除此筆貸款嗎？')) {
+        loans = loans.filter(l => l.id !== id);
+        saveDeposits();
+        renderLoanDashboard();
+        renderLoanTable();
+        renderMonthlyPayment();
+    }
+}
+
+function calculateLoanInterest(amount, rate, startDate, endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const days = Math.floor((end - start) / (1000 * 60 * 60 * 24));
+    return amount * rate * days / 365 / 100;
+}
+
+function renderLoanDashboard() {
+    // 貸款儀表板已刪除，此函數保留以避免錯誤
+}
+
+function renderLoanTable() {
+    const tbody = document.getElementById('loanTableBody');
+    
+    if (loans.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 2rem;">📭 尚無貸款</td></tr>';
+        return;
+    }
+
+    // 按到期日排序（最快到期的在前，已到期的在最後）
+    const sorted = [...loans].sort((a, b) => {
+        const daysA = Math.floor((new Date(a.endDate) - new Date()) / (1000 * 60 * 60 * 24));
+        const daysB = Math.floor((new Date(b.endDate) - new Date()) / (1000 * 60 * 60 * 24));
+        
+        // 已到期的排在最後
+        if (daysA <= 0 && daysB > 0) return 1;
+        if (daysA > 0 && daysB <= 0) return -1;
+        
+        // 都已到期或都未到期，按天數排序
+        return daysA - daysB;
+    });
+
+    tbody.innerHTML = sorted.map(l => {
+        const interest = calculateLoanInterest(l.amount, l.rate, l.startDate, l.endDate);
+        const days = Math.floor((new Date(l.endDate) - new Date()) / (1000 * 60 * 60 * 24));
+        const typeText = l.type === 'monthly-interest' ? '每月付息' : l.type === 'monthly-principal' ? '還本還息' : '特殊';
+        let status = days <= 0 ? '已到期' : days <= 30 ? `即將到期(${days}天)` : `剩${days}天`;
+
+        return `
+            <tr>
+                <td>${l.bank}</td>
+                <td>${l.amount.toLocaleString('en-US', {maximumFractionDigits: 0})}</td>
+                <td>${l.rate}%</td>
+                <td>${l.startDate}</td>
+                <td>${l.endDate}</td>
+                <td>${typeText}</td>
+                <td>${status}</td>
+                <td>${l.notes || '-'}</td>
+                <td><button class="btn btn-sm" onclick="openEditLoanModal(${l.id})">變更</button></td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function renderMonthlyPayment() {
+    const tbody = document.getElementById('monthlyPaymentBody');
+    
+    // 初始化日期選擇器（從當月 1 日開始）
+    const today = new Date();
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    const yearEnd = new Date(today.getFullYear() + 1, today.getMonth(), 0);
+    
+    const startDateInput = document.getElementById('monthlyStartDate');
+    const endDateInput = document.getElementById('monthlyEndDate');
+    
+    // 强制设置预设值（从当月1日开始）—— 用字符串格式避免时区问题
+    const monthStartStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-01`;
+    const yearEndStr = `${today.getFullYear() + 1}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(new Date(today.getFullYear() + 1, today.getMonth() + 1, 0).getDate()).padStart(2, '0')}`;
+    
+    startDateInput.value = monthStartStr;
+    endDateInput.value = yearEndStr;
+    
+    const startDate = new Date(startDateInput.value);
+    const endDate = new Date(endDateInput.value);
+    
+    // 直接用選擇的月份，不推進
+    const startMonth = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+    
+    if (loans.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem;">📭 尚無貸款</td></tr>';
+        return;
+    }
+
+    // 按月份統計各銀行的付款
+    const monthlyData = {};
+    const monthlyDetails = {}; // 存儲詳細資訊用於展開
+    
+    loans.forEach(l => {
+        const loanStart = new Date(l.startDate);
+        const loanEnd = new Date(l.endDate);
+        
+        let currentDate = new Date(startMonth);
+        while (currentDate <= endDate && currentDate <= loanEnd) {
+            if (currentDate >= loanStart) {
+                const monthStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+                
+                if (!monthlyData[monthStr]) {
+                    monthlyData[monthStr] = {};
+                    monthlyDetails[monthStr] = {};
+                }
+                if (!monthlyData[monthStr][l.bank]) {
+                    monthlyData[monthStr][l.bank] = { interest: 0, principal: 0 };
+                    monthlyDetails[monthStr][l.bank] = [];
+                }
+
+                const monthlyInterest = (l.amount * l.rate / 100) / 12;
+                
+                const months = Math.ceil((loanEnd - loanStart) / (1000 * 60 * 60 * 24 * 30));
+                const monthlyPrincipal = l.type === 'monthly-principal' ? l.amount / months : 0;
+
+                // 判斷扣款日
+                let paymentDays = [];
+                if (l.bank === '國泰世華') {
+                    paymentDays = [16];
+                } else if (l.bank === '兆豐銀行') {
+                    paymentDays = [7, 25];
+                } else {
+                    const endDay = new Date(l.endDate).getDate();
+                    paymentDays = [endDay];
+                }
+
+                // 為每個扣款日添加記錄
+                paymentDays.forEach(day => {
+                    let dayInterest = monthlyInterest;
+                    let dayPrincipal = monthlyPrincipal;
+                    let type = l.type === 'monthly-interest' ? '利息' : '本金+利息';
+                    
+                    if (l.bank === '兆豐銀行') {
+                        if (day === 7) {
+                            dayInterest = 0;
+                            type = '本金';
+                        } else {
+                            dayPrincipal = 0;
+                            type = '利息';
+                        }
+                    }
+
+                    monthlyData[monthStr][l.bank].interest += dayInterest;
+                    monthlyData[monthStr][l.bank].principal += dayPrincipal;
+                    
+                    monthlyDetails[monthStr][l.bank].push({
+                        day: day,
+                        interest: dayInterest,
+                        principal: dayPrincipal,
+                        type: type
+                    });
+                });
+            }
+            
+            currentDate.setMonth(currentDate.getMonth() + 1);
+        }
+    });
+
+    // 生成表格
+    let html = '';
+    
+    Object.keys(monthlyData).sort().forEach(month => {
+        // 只顯示 >= startMonth 的月份
+        const monthDate = new Date(month + '-01');
+        if (monthDate < startMonth) {
+            return;
+        }
+        
+        const banks = Object.keys(monthlyData[month]).sort();
+        let monthTotal = { interest: 0, principal: 0 };
+
+        banks.forEach((bank) => {
+            const data = monthlyData[month][bank];
+            const total = data.interest + data.principal;
+            monthTotal.interest += data.interest;
+            monthTotal.principal += data.principal;
+            
+            const details = monthlyDetails[month][bank];
+            const detailRowId = `detail-${month}-${bank}`;
+
+            html += `
+                <tr style="background: #f9fafb;">
+                    <td>${month}</td>
+                    <td>${bank}</td>
+                    <td><strong>${total.toLocaleString('en-US', {maximumFractionDigits: 0})}</strong></td>
+                    <td>${data.principal.toLocaleString('en-US', {maximumFractionDigits: 0})}</td>
+                    <td>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>${data.interest.toLocaleString('en-US', {maximumFractionDigits: 0})}</span>
+                            <button onclick="toggleDetails('${detailRowId}'); event.stopPropagation();" style="padding: 4px 10px; font-size: 12px; background: #3b82f6; color: white; border: none; border-radius: 3px; cursor: pointer; white-space: nowrap;">明細</button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+
+            // 隱藏的詳細列表行
+            html += `<tr id="${detailRowId}" style="display: none;">
+                <td colspan="5">
+                    <table style="width: 100%; border: none; margin: 8px 0;">
+                        <tr style="background: #f0f9ff;">
+                            <td style="padding: 4px 8px; text-align: right;">扣款日</td>
+                            <td style="padding: 4px 8px; text-align: right;">類型</td>
+                            <td style="padding: 4px 8px; text-align: right;">金額</td>
+                        </tr>
+            `;
+            
+            // 按日期排序 + 過濾掉金額為 0 的項目
+            const sortedDetails = details.sort((a, b) => a.day - b.day);
+            
+            sortedDetails.forEach(d => {
+                const detailTotal = d.interest + d.principal;
+                // 只顯示金額 > 0 的項目
+                if (detailTotal > 0) {
+                    html += `
+                        <tr>
+                            <td style="padding: 4px 8px; text-align: right;">${d.day} 日</td>
+                            <td style="padding: 4px 8px; text-align: right;">${d.type}</td>
+                            <td style="padding: 4px 8px; text-align: right;">${detailTotal.toLocaleString('en-US', {maximumFractionDigits: 0})}</td>
+                        </tr>
+                    `;
+                }
+            });
+            
+            html += `
+                    </table>
+                </td>
+            </tr>
+            `;
+        });
+
+        // 月份合計行
+        const monthTotalAmount = monthTotal.interest + monthTotal.principal;
+        html += `
+            <tr style="background: #dbeafe; font-weight: 600;">
+                <td colspan="2">${month} 小計</td>
+                <td>${monthTotalAmount.toLocaleString('en-US', {maximumFractionDigits: 0})}</td>
+                <td>${monthTotal.principal.toLocaleString('en-US', {maximumFractionDigits: 0})}</td>
+                <td>${monthTotal.interest.toLocaleString('en-US', {maximumFractionDigits: 0})}</td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html || '<tr><td colspan="5" style="text-align: center; padding: 2rem;">📭 無符合條件的付款資料</td></tr>';
+}
+
+// 展開/收起詳細列表
+function toggleDetails(detailRowId) {
+    const row = document.getElementById(detailRowId);
+    
+    if (row.style.display === 'none') {
+        row.style.display = 'table-row';
+    } else {
+        row.style.display = 'none';
+    }
+}
+
+// 初始化
+window.addEventListener('DOMContentLoaded', function() {
+    renderCalendar();
+    renderDashboard();
+    renderTable();
+    renderNotesList();
+    renderLoanDashboard();
+    renderLoanTable();
+    renderMonthlyPayment();
+    document.getElementById('startDate').valueAsDate = new Date();
+    document.getElementById('loanStartDate').valueAsDate = new Date();
+    setNoteDateDefault();
+});
+
+// ===== 定期存款編輯 =====
+function openEditDepositModal(id) {
+    const deposit = deposits.find(d => d.id === id);
+    if (!deposit) return;
+    
+    document.getElementById('editDepositId').value = id;
+    document.getElementById('editDepositBank').value = deposit.bankName;
+    document.getElementById('editDepositAmount').value = deposit.amount;
+    document.getElementById('editDepositRate').value = deposit.rate;
+    document.getElementById('editDepositStartDate').value = deposit.startDate;
+    document.getElementById('editDepositEndDate').value = deposit.endDate;
+    document.getElementById('editDepositCurrency').value = deposit.currency || 'TWD';
+    document.getElementById('editDepositNotes').value = deposit.notes || '';
+    
+    document.getElementById('editDepositModal').style.display = 'flex';
+}
+
+function closeEditDepositModal() {
+    document.getElementById('editDepositModal').style.display = 'none';
+}
+
+function saveEditDeposit() {
+    const id = parseInt(document.getElementById('editDepositId').value);
+    const deposit = deposits.find(d => d.id === id);
+    
+    if (deposit) {
+        deposit.bankName = document.getElementById('editDepositBank').value;
+        deposit.amount = parseFloat(document.getElementById('editDepositAmount').value);
+        deposit.rate = parseFloat(document.getElementById('editDepositRate').value);
+        deposit.startDate = document.getElementById('editDepositStartDate').value;
+        deposit.endDate = document.getElementById('editDepositEndDate').value;
+        deposit.currency = document.getElementById('editDepositCurrency').value;
+        deposit.notes = document.getElementById('editDepositNotes').value;
+        
+        saveDeposits();
+        closeEditDepositModal();
+        renderTable();
+        renderCalendar();
+    }
+}
+
+function deleteEditDeposit() {
+    if (confirm('確定要刪除此筆定期存款嗎？')) {
+        const id = parseInt(document.getElementById('editDepositId').value);
+        deposits = deposits.filter(d => d.id !== id);
+        saveDeposits();
+        closeEditDepositModal();
+        renderTable();
+        renderCalendar();
+    }
+}
+
+// ===== 貸款編輯 =====
+function openEditLoanModal(id) {
+    const loan = loans.find(l => l.id === id);
+    if (!loan) return;
+    
+    document.getElementById('editLoanId').value = id;
+    document.getElementById('editLoanBank').value = loan.bank;
+    document.getElementById('editLoanAmount').value = loan.amount;
+    document.getElementById('editLoanRate').value = loan.rate;
+    document.getElementById('editLoanStartDate').value = loan.startDate;
+    document.getElementById('editLoanEndDate').value = loan.endDate;
+    document.getElementById('editLoanType').value = loan.type;
+    document.getElementById('editLoanNotes').value = loan.notes || '';
+    
+    document.getElementById('editLoanModal').style.display = 'flex';
+}
+
+function closeEditLoanModal() {
+    document.getElementById('editLoanModal').style.display = 'none';
+}
+
+function saveEditLoan() {
+    const id = parseInt(document.getElementById('editLoanId').value);
+    const loan = loans.find(l => l.id === id);
+    
+    if (loan) {
+        loan.bank = document.getElementById('editLoanBank').value;
+        loan.amount = parseFloat(document.getElementById('editLoanAmount').value);
+        loan.rate = parseFloat(document.getElementById('editLoanRate').value);
+        loan.startDate = document.getElementById('editLoanStartDate').value;
+        loan.endDate = document.getElementById('editLoanEndDate').value;
+        loan.type = document.getElementById('editLoanType').value;
+        loan.notes = document.getElementById('editLoanNotes').value;
+        
+        saveLoans();
+        closeEditLoanModal();
+        renderLoanTable();
+        renderCalendar();
+        renderMonthlyPayment();
+    }
+}
+
+function deleteEditLoan() {
+    if (confirm('確定要刪除此筆貸款嗎？')) {
+        const id = parseInt(document.getElementById('editLoanId').value);
+        loans = loans.filter(l => l.id !== id);
+        saveLoans();
+        closeEditLoanModal();
+        renderLoanTable();
+        renderCalendar();
+        renderMonthlyPayment();
+    }
+}
+
+function saveLoans() {
+    localStorage.loans = JSON.stringify(loans);
+}
 </script>
+
+<!-- 定期存款編輯 Modal -->
+<div id="editDepositModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 2rem; border-radius: 8px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
+        <h3>編輯定期存款</h3>
+        <form id="editDepositForm" style="display: flex; flex-direction: column; gap: 1rem;">
+            <input type="hidden" id="editDepositId">
+            <div>
+                <label>銀行名稱</label>
+                <input type="text" id="editDepositBank" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            <div>
+                <label>金額</label>
+                <input type="number" id="editDepositAmount" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            <div>
+                <label>利率 (%)</label>
+                <input type="number" id="editDepositRate" step="0.01" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            <div>
+                <label>起存日</label>
+                <input type="date" id="editDepositStartDate" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            <div>
+                <label>到期日</label>
+                <input type="date" id="editDepositEndDate" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            <div>
+                <label>幣別</label>
+                <select id="editDepositCurrency" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option>TWD</option>
+                    <option>USD</option>
+                    <option>CNY</option>
+                    <option>JPY</option>
+                    <option>EUR</option>
+                </select>
+            </div>
+            <div>
+                <label>備註</label>
+                <input type="text" id="editDepositNotes" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button type="button" onclick="saveEditDeposit()" style="flex: 1; padding: 10px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">確認</button>
+                <button type="button" onclick="deleteEditDeposit()" style="flex: 1; padding: 10px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer;">刪除</button>
+                <button type="button" onclick="closeEditDepositModal()" style="flex: 1; padding: 10px; background: #999; color: white; border: none; border-radius: 4px; cursor: pointer;">取消</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 貸款編輯 Modal -->
+<div id="editLoanModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 2rem; border-radius: 8px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
+        <h3>編輯貸款</h3>
+        <form id="editLoanForm" style="display: flex; flex-direction: column; gap: 1rem;">
+            <input type="hidden" id="editLoanId">
+            <div>
+                <label>銀行</label>
+                <input type="text" id="editLoanBank" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            <div>
+                <label>金額</label>
+                <input type="number" id="editLoanAmount" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            <div>
+                <label>利率 (%)</label>
+                <input type="number" id="editLoanRate" step="0.01" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            <div>
+                <label>借款日</label>
+                <input type="date" id="editLoanStartDate" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            <div>
+                <label>到期日</label>
+                <input type="date" id="editLoanEndDate" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            <div>
+                <label>還款方式</label>
+                <select id="editLoanType" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="monthly-interest">每月付息</option>
+                    <option value="monthly-principal">還本還息</option>
+                </select>
+            </div>
+            <div>
+                <label>備註</label>
+                <input type="text" id="editLoanNotes" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button type="button" onclick="saveEditLoan()" style="flex: 1; padding: 10px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">確認</button>
+                <button type="button" onclick="deleteEditLoan()" style="flex: 1; padding: 10px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer;">刪除</button>
+                <button type="button" onclick="closeEditLoanModal()" style="flex: 1; padding: 10px; background: #999; color: white; border: none; border-radius: 4px; cursor: pointer;">取消</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 </body>
 </html>
