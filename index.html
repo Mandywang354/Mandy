@@ -560,6 +560,27 @@
     </style>
 </head>
 <body>
+
+<!-- 登入頁面 -->
+<div id="loginPage" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+    <div style="background: white; padding: 3rem; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); width: 90%; max-width: 400px;">
+        <h1 style="text-align: center; color: #1f2937; margin-bottom: 2rem; font-size: 28px;">💳 資金管理系統</h1>
+        
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; color: #374151; font-weight: 500;">帳號</label>
+            <input type="text" id="loginUsername" placeholder="輸入帳號" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 14px; box-sizing: border-box;" onkeypress="if(event.key==='Enter') login()">
+        </div>
+        
+        <div style="margin-bottom: 2rem;">
+            <label style="display: block; margin-bottom: 0.5rem; color: #374151; font-weight: 500;">密碼</label>
+            <input type="password" id="loginPassword" placeholder="輸入密碼" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 14px; box-sizing: border-box;" onkeypress="if(event.key==='Enter') login()">
+        </div>
+        
+        <button onclick="login()" style="width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 1rem;">登入</button>
+        
+        <div id="loginError" style="color: #dc2626; text-align: center; display: none; font-size: 14px;">帳號或密碼錯誤</div>
+    </div>
+</div>
 <div class="container">
     <div class="header">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
@@ -895,16 +916,16 @@ let deposits = JSON.parse(localStorage.getItem('deposits'));
 if (!deposits || deposits.length < 9) {
     deposits = [
         // 進行中的資料
-        { id: 1, bankName: '台新定存', currency: 'USD', amount: 597515.04, rate: 3.70, startDate: '2026-05-18', endDate: '2026-08-18', notes: '' },
-        { id: 2, bankName: '彰銀定存', currency: 'USD', amount: 600000, rate: 3.78, startDate: '2026-04-21', endDate: '2026-07-21', notes: '' },
-        { id: 3, bankName: '台北富邦定存', currency: 'USD', amount: 200000, rate: 3.93, startDate: '2026-03-26', endDate: '2026-06-26', notes: '' },
-        { id: 4, bankName: '台北富邦定存', currency: 'USD', amount: 155533, rate: 3.71, startDate: '2026-04-21', endDate: '2026-07-21', notes: '' },
-        { id: 5, bankName: '國泰世華定存', currency: 'USD', amount: 342950.56, rate: 3.68, startDate: '2026-04-21', endDate: '2026-07-21', notes: '' },
-        { id: 6, bankName: '一銀儲蓄定存', currency: 'USD', amount: 314602.96, rate: 3.62, startDate: '2026-04-21', endDate: '2026-07-21', notes: '' },
-        { id: 7, bankName: '中信定存', currency: 'USD', amount: 257239.57, rate: 3.82, startDate: '2026-06-01', endDate: '2026-09-01', notes: '' },
+        { id: 1, bankName: '台新定存', currency: 'TWD', amount: 597515.04, rate: 3.70, startDate: '2026-05-18', endDate: '2026-08-18', notes: '' },
+        { id: 2, bankName: '彰銀定存', currency: 'TWD', amount: 600000, rate: 3.78, startDate: '2026-04-21', endDate: '2026-07-21', notes: '' },
+        { id: 3, bankName: '台北富邦定存', currency: 'TWD', amount: 200000, rate: 3.93, startDate: '2026-03-26', endDate: '2026-06-26', notes: '' },
+        { id: 4, bankName: '台北富邦定存', currency: 'TWD', amount: 155533, rate: 3.71, startDate: '2026-04-21', endDate: '2026-07-21', notes: '' },
+        { id: 5, bankName: '國泰世華定存', currency: 'TWD', amount: 342950.56, rate: 3.68, startDate: '2026-04-21', endDate: '2026-07-21', notes: '' },
+        { id: 6, bankName: '一銀儲蓄定存', currency: 'TWD', amount: 314602.96, rate: 3.62, startDate: '2026-04-21', endDate: '2026-07-21', notes: '' },
+        { id: 7, bankName: '中信定存', currency: 'TWD', amount: 257239.57, rate: 3.82, startDate: '2026-06-01', endDate: '2026-09-01', notes: '' },
         // 已到期的資料
-        { id: 8, bankName: '台新定存(舊)', currency: 'USD', amount: 597515.04, rate: 3.70, startDate: '2026-02-18', endDate: '2026-05-18', notes: '' },
-        { id: 9, bankName: '中信定存(舊)', currency: 'USD', amount: 250000, rate: 3.67, startDate: '2026-02-24', endDate: '2026-05-24', notes: '' }
+        { id: 8, bankName: '台新定存(舊)', currency: 'TWD', amount: 597515.04, rate: 3.70, startDate: '2026-02-18', endDate: '2026-05-18', notes: '' },
+        { id: 9, bankName: '中信定存(舊)', currency: 'TWD', amount: 250000, rate: 3.67, startDate: '2026-02-24', endDate: '2026-05-24', notes: '' }
     ];
     localStorage.setItem('deposits', JSON.stringify(deposits));
 }
@@ -925,26 +946,42 @@ let loans = JSON.parse(localStorage.getItem('loans')) || [
     { id: 1010, bank: '彰化銀行', amount: 4000000, rate: 2.05, startDate: '2025-11-17', endDate: '2026-11-18', type: 'monthly-interest', monthlyPayment: 0, notes: '銀行借款' },
     
     // 銀行長期借款（每月還本+利息）
-    { id: 2001, bank: '玉山銀行', amount: 2128279, rate: 1.95, startDate: '2019-12-24', endDate: '2039-12-24', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
-    { id: 2002, bank: '玉山銀行', amount: 63404618, rate: 1.95, startDate: '2019-12-24', endDate: '2039-12-24', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
-    { id: 2003, bank: '玉山銀行', amount: 15688429, rate: 1.95, startDate: '2020-09-21', endDate: '2040-09-21', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
-    { id: 2004, bank: '玉山銀行', amount: 238991, rate: 1.95, startDate: '2020-09-21', endDate: '2040-09-21', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
+    { id: 2001, bank: '玉山銀行', amount: 2128279, rate: 1.95, startDate: '2019-12-24', endDate: '2039-12-24', type: 'monthly-principal', monthlyPayment: 14872, notes: '銀行長期借款' },
+    { id: 2002, bank: '玉山銀行', amount: 63404618, rate: 1.95, startDate: '2019-12-24', endDate: '2039-12-24', type: 'monthly-principal', monthlyPayment: 443088, notes: '銀行長期借款' },
+    { id: 2003, bank: '玉山銀行', amount: 15688429, rate: 1.95, startDate: '2020-09-21', endDate: '2040-09-21', type: 'monthly-principal', monthlyPayment: 104626, notes: '銀行長期借款' },
+    { id: 2004, bank: '玉山銀行', amount: 238991, rate: 1.95, startDate: '2020-09-21', endDate: '2040-09-21', type: 'monthly-principal', monthlyPayment: 1593, notes: '銀行長期借款' },
     { id: 2005, bank: '台北富邦銀行', amount: 2208331, rate: 2.22, startDate: '2025-12-30', endDate: '2030-10-27', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
     { id: 2006, bank: '彰化銀行', amount: 80554, rate: 2.22, startDate: '2026-01-23', endDate: '2028-10-02', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
     { id: 2007, bank: '彰化銀行', amount: 7333334, rate: 2.22, startDate: '2025-12-30', endDate: '2029-02-21', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
     { id: 2008, bank: '彰化銀行', amount: 11238890, rate: 2.22, startDate: '2026-01-28', endDate: '2029-03-20', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
     { id: 2009, bank: '兆豐銀行', amount: 20000000, rate: 2.22, startDate: '2026-03-24', endDate: '2029-05-07', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款 (6/7開始還本)' },
-    { id: 2010, bank: '玉山銀行', amount: 5887173, rate: 2.22, startDate: '2026-04-15', endDate: '2027-07-15', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
-    { id: 2011, bank: '玉山銀行', amount: 3976545, rate: 2.22, startDate: '2025-10-27', endDate: '2027-12-02', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
+    { id: 2010, bank: '玉山銀行', amount: 5887173, rate: 2.22, startDate: '2026-04-15', endDate: '2027-07-15', type: 'monthly-principal', monthlyPayment: 426370, notes: '銀行長期借款' },
+    { id: 2011, bank: '玉山銀行', amount: 3976545, rate: 2.22, startDate: '2025-10-27', endDate: '2027-12-02', type: 'monthly-principal', monthlyPayment: 213186, notes: '銀行長期借款' },
     { id: 2012, bank: '中國信託', amount: 3510739, rate: 2.36, startDate: '2023-10-02', endDate: '2028-06-16', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
     { id: 2013, bank: '台北富邦銀行', amount: 458335, rate: 2.22, startDate: '2026-06-16', endDate: '2030-12-08', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
     { id: 2014, bank: '台新銀行', amount: 10000000, rate: 2.59, startDate: '2024-02-21', endDate: '2028-08-29', type: 'monthly-interest', monthlyPayment: 0, notes: '特殊：長期借款但每月付息' },
     { id: 2015, bank: '中國信託', amount: 9639658, rate: 2.36, startDate: '2024-05-07', endDate: '2028-06-16', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' }
 ];
 
+// === 自動修正：確保玉山銀行六筆等額本息貸款的月付額正確（防止舊快取覆蓋新設定）===
+const yushanMonthlyPayments = {
+    2001: 14872,
+    2002: 443088,
+    2003: 104626,
+    2004: 1593,
+    2010: 426370,
+    2011: 213186
+};
+loans.forEach(l => {
+    if (yushanMonthlyPayments[l.id] !== undefined) {
+        l.monthlyPayment = yushanMonthlyPayments[l.id];
+    }
+});
+localStorage.setItem('loans', JSON.stringify(loans));
+
 const banks = ['台新銀行', '台北富邦銀行', '中國信託', '玉山銀行', '彰化銀行', '國泰世華', '兆豐銀行', '第一銀行'];
 
-let currentMonth = new Date();
+let currentMonth = new Date(); // 當前日期
 let currentCurrencyFilter = 'ALL';
 let currentEditingNoteId = null;
 
@@ -1059,6 +1096,19 @@ function calculateLoanPaymentForDay(loan, year, month, day) {
         paymentDays = [16];
     } else if (loan.bank === '兆豐銀行') {
         paymentDays = [7, 25];
+    } else if (loan.bank === '玉山銀行') {
+        // 玉山銀行特殊本金貸款
+        if (loan.id === 2010) paymentDays = [16];           // 低碳1000萬
+        else if (loan.id === 2011) paymentDays = [2];       // 低碳專案500萬
+        else if (loan.id === 2001) paymentDays = [24];      // 房貸299萬
+        else if (loan.id === 2003) paymentDays = [21];      // 房貸3001萬
+        else if (loan.id === 2004) paymentDays = [21];      // 房貸3131萬
+        else if (loan.id === 2002) paymentDays = [24];      // 房貸6069萬
+        else {
+            // 其他玉山銀行貸款（短期借款等）
+            const endDay = new Date(loan.endDate).getDate();
+            paymentDays = [endDay];
+        }
     } else {
         const endDay = new Date(loan.endDate).getDate();
         paymentDays = [endDay];
@@ -1069,7 +1119,83 @@ function calculateLoanPaymentForDay(loan, year, month, day) {
         return null;
     }
     
-    // === 特殊處理：id 2009（兆豐銀行 20,000,000，本金固定 555,555） ===
+    // === 特殊處理：彰化銀行三筆固定本金貸款 ===
+    if (loan.id === 2006) {
+        // id 2006：2日扣本金 $2,778
+        if (day === 2) {
+            const currentBalance = loan.amount;
+            const monthlyInterest = (currentBalance * loan.rate / 100) / 12;
+            return {
+                interest: monthlyInterest,
+                principal: 2778,
+                type: '本金',
+                total: monthlyInterest + 2778
+            };
+        }
+        return null;
+    }
+    
+    if (loan.id === 2008) {
+        // id 2008：20日扣本金 $330,555
+        if (day === 20) {
+            const currentBalance = loan.amount;
+            const monthlyInterest = (currentBalance * loan.rate / 100) / 12;
+            return {
+                interest: monthlyInterest,
+                principal: 330555,
+                type: '本金',
+                total: monthlyInterest + 330555
+            };
+        }
+        return null;
+    }
+    
+    if (loan.id === 2007) {
+        // id 2007：21日扣本金 $222,222
+        if (day === 21) {
+            const currentBalance = loan.amount;
+            const monthlyInterest = (currentBalance * loan.rate / 100) / 12;
+            return {
+                interest: monthlyInterest,
+                principal: 222222,
+                type: '本金',
+                total: monthlyInterest + 222222
+            };
+        }
+        return null;
+    }
+    
+    // === 特殊處理：玉山銀行四筆固定本金貸款 ===
+    // === 特殊處理：玉山銀行六筆等額本息貸款 ===
+    if (loan.bank === '玉山銀行' && [2001, 2002, 2003, 2004, 2010, 2011].includes(loan.id)) {
+        // 檢查當月是否有扣款日
+        let hasPaymentDay = false;
+        let paymentDay = null;
+        
+        if (loan.id === 2010) { paymentDay = 16; }
+        else if (loan.id === 2011) { paymentDay = 2; }
+        else if (loan.id === 2001) { paymentDay = 24; }
+        else if (loan.id === 2003) { paymentDay = 21; }
+        else if (loan.id === 2004) { paymentDay = 21; }
+        else if (loan.id === 2002) { paymentDay = 24; }
+        
+        if (paymentDay && day === paymentDay) {
+            // 計算當月利息（基於當前餘額）
+            const monthlyInterest = (loan.amount * loan.rate / 100) / 12;
+            // 本金 = 月付額 - 利息
+            const principal = loan.monthlyPayment - monthlyInterest;
+            
+            return {
+                interest: monthlyInterest,
+                principal: principal > 0 ? principal : 0,
+                type: '本金',
+                total: loan.monthlyPayment
+            };
+        }
+        return null;
+    }
+    
+    
     if (loan.id === 2009) {
         const startPayDate = new Date('2026-06-07'); // 6月7日開始還本
         
@@ -1395,7 +1521,8 @@ function renderTable() {
 }
 
 function exportToExcel() {
-    const wsData = [['銀行名稱', '幣別', '金額', '利率', '起存日', '到期日', '利息', '本利和', '備註', '狀態']];
+    // ===== 定期存款資料 =====
+    const depositData = [['銀行名稱', '幣別', '金額', '利率', '起存日', '到期日', '利息', '本利和', '備註', '狀態']];
     deposits.forEach(d => {
         const interest = calculateInterest(d.amount, d.rate, d.startDate, d.endDate);
         const days = daysUntil(d.endDate);
@@ -1406,13 +1533,78 @@ function exportToExcel() {
         const interestVal = isForex ? interest.toFixed(2) : interest.toFixed(0);
         const totalVal = isForex ? (d.amount + interest).toFixed(2) : (d.amount + interest).toFixed(0);
         
-        wsData.push([d.bankName, d.currency, amount, d.rate, d.startDate, d.endDate, interestVal, totalVal, d.notes || '', status]);
+        depositData.push([d.bankName, d.currency, amount, d.rate, d.startDate, d.endDate, interestVal, totalVal, d.notes || '', status]);
     });
 
-    const ws = XLSX.utils.aoa_to_sheet(wsData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, '定期存款');
-    XLSX.writeFile(wb, '定期存款追蹤_' + new Date().toISOString().split('T')[0] + '.xlsx');
+    // ===== 貸款資料 =====
+    const loanData = [['銀行名稱', '借款金額', '利率', '借款日', '到期日', '還款方式', '月付額', '備註', '狀態']];
+    loans.forEach(l => {
+        const days = daysUntil(l.endDate);
+        let status = days <= 0 ? '已到期' : `剩 ${days} 天`;
+        const typeText = l.type === 'monthly-interest' ? '每月付息' : '每月還本+利息';
+        
+        loanData.push([
+            l.bank,
+            l.amount.toFixed(0),
+            l.rate,
+            l.startDate,
+            l.endDate,
+            typeText,
+            l.monthlyPayment ? l.monthlyPayment.toFixed(0) : '',
+            l.notes || '',
+            status
+        ]);
+    });
+
+    // 檢查 XLSX 函式庫是否成功載入（可能因網路限制而失敗）
+    if (typeof XLSX === 'undefined') {
+        alert('⚠️ Excel 匯出元件無法載入（可能是網路限制），改用 CSV 格式匯出（會下載 2 個檔案：定期存款 + 貸款）');
+        exportToCSV(depositData, '定期存款追蹤_' + new Date().toISOString().split('T')[0] + '.csv');
+        exportToCSV(loanData, '貸款追蹤_' + new Date().toISOString().split('T')[0] + '.csv');
+        return;
+    }
+
+    try {
+        const wb = XLSX.utils.book_new();
+        
+        const wsDeposit = XLSX.utils.aoa_to_sheet(depositData);
+        XLSX.utils.book_append_sheet(wb, wsDeposit, '定期存款');
+        
+        const wsLoan = XLSX.utils.aoa_to_sheet(loanData);
+        XLSX.utils.book_append_sheet(wb, wsLoan, '貸款');
+        
+        XLSX.writeFile(wb, '資金管理系統_' + new Date().toISOString().split('T')[0] + '.xlsx');
+    } catch (err) {
+        alert('⚠️ Excel 匯出發生錯誤，改用 CSV 格式匯出\n錯誤訊息：' + err.message);
+        exportToCSV(depositData, '定期存款追蹤_' + new Date().toISOString().split('T')[0] + '.csv');
+        exportToCSV(loanData, '貸款追蹤_' + new Date().toISOString().split('T')[0] + '.csv');
+    }
+}
+
+// CSV 備援匯出（不依賴外部函式庫，一定能用）
+function exportToCSV(wsData, filename) {
+    // 加入 BOM 避免中文亂碼
+    const BOM = '\uFEFF';
+    const csvContent = BOM + wsData.map(row => 
+        row.map(cell => {
+            const cellStr = String(cell);
+            // 若內容含逗號或雙引號，需要用雙引號包起來
+            if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+                return '"' + cellStr.replace(/"/g, '""') + '"';
+            }
+            return cellStr;
+        }).join(',')
+    ).join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 // ===== 匯入文件 =====
@@ -1768,6 +1960,19 @@ function renderMonthlyPayment() {
                     paymentDays = [16];
                 } else if (l.bank === '兆豐銀行') {
                     paymentDays = [7, 25];
+                } else if (l.bank === '玉山銀行') {
+                    // 玉山銀行特殊本金貸款
+                    if (l.id === 2010) paymentDays = [16];           // 低碳1000萬
+                    else if (l.id === 2011) paymentDays = [2];       // 低碳專案500萬
+                    else if (l.id === 2001) paymentDays = [24];      // 房貸299萬
+                    else if (l.id === 2003) paymentDays = [21];      // 房貸3001萬
+                    else if (l.id === 2004) paymentDays = [21];      // 房貸3131萬
+                    else if (l.id === 2002) paymentDays = [24];      // 房貸6069萬
+                    else {
+                        // 其他玉山銀行貸款
+                        const endDay = new Date(l.endDate).getDate();
+                        paymentDays = [endDay];
+                    }
                 } else {
                     const endDay = new Date(l.endDate).getDate();
                     paymentDays = [endDay];
@@ -1775,18 +1980,20 @@ function renderMonthlyPayment() {
 
                 // 為每個扣款日添加記錄
                 paymentDays.forEach(day => {
-                    let dayInterest = monthlyInterest;
-                    let dayPrincipal = monthlyPrincipal;
+                    // 使用 calculateLoanPaymentForDay 函數計算本金和利息
+                    const dayPayment = calculateLoanPaymentForDay(l, currentDate.getFullYear(), currentDate.getMonth(), day);
+                    
+                    let dayInterest = 0;
+                    let dayPrincipal = 0;
                     let type = l.type === 'monthly-interest' ? '利息' : '本金+利息';
                     
-                    if (l.bank === '兆豐銀行') {
-                        if (day === 7) {
-                            dayInterest = 0;
-                            type = '本金';
-                        } else {
-                            dayPrincipal = 0;
-                            type = '利息';
-                        }
+                    if (dayPayment) {
+                        dayInterest = dayPayment.interest;
+                        dayPrincipal = dayPayment.principal;
+                        type = dayPayment.principal > 0 ? (dayPayment.interest > 0 ? '本金+利息' : '本金') : '利息';
+                    } else {
+                        // 如果 calculateLoanPaymentForDay 返回 null（特殊貸款在非扣款日），就跳過
+                        return;
                     }
 
                     monthlyData[monthStr][l.bank].interest += dayInterest;
@@ -1904,7 +2111,46 @@ function toggleDetails(detailRowId) {
 }
 
 // 初始化
+// ===== 登入功能 =====
+function login() {
+    const username = document.getElementById('loginUsername').value;
+    const password = document.getElementById('loginPassword').value;
+    const loginError = document.getElementById('loginError');
+    
+    if (username === 'COMART' && password === 'COMART') {
+        sessionStorage.setItem('loggedIn', 'true');
+        document.getElementById('loginPage').style.display = 'none';
+        
+        // 登入後初始化應用
+        currentMonth = new Date();
+        renderCalendar();
+        renderDashboard();
+        renderTable();
+        renderNotesList();
+        renderLoanDashboard();
+        renderLoanTable();
+        renderMonthlyPayment();
+    } else {
+        loginError.style.display = 'block';
+        document.getElementById('loginPassword').value = '';
+        document.getElementById('loginUsername').focus();
+    }
+}
+
 window.addEventListener('DOMContentLoaded', function() {
+    // 檢查登入狀態
+    if (sessionStorage.getItem('loggedIn') !== 'true') {
+        document.getElementById('loginPage').style.display = 'flex';
+        document.getElementById('loginUsername').focus();
+        return;
+    }
+    
+    // 已登入，隱藏登入頁，初始化應用
+    document.getElementById('loginPage').style.display = 'none';
+    
+    // 確保 currentMonth 為當前日期（當月）
+    currentMonth = new Date();
+    
     renderCalendar();
     renderDashboard();
     renderTable();
