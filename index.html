@@ -839,15 +839,19 @@
                 </div>
                 <div class="form-group">
                     <label>還款方式 *</label>
-                    <select id="loanType">
-                        <option value="monthly-interest">① 每月付息</option>
-                        <option value="monthly-principal">② 還本還息</option>
-                        <option value="special">③ 特殊(備註)</option>
+                    <select id="loanType" onchange="toggleMonthlyPaymentField()">
+                        <option value="monthly-interest">① 只付利息（到期一次還本金）</option>
+                        <option value="monthly-principal">② 本金平均攤還（每月本金固定，利息遞減）</option>
+                        <option value="monthly-installment">③ 等額本息（每月繳款總額固定，系統自動算）</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>月付金額 (僅供參考)</label>
-                    <input type="number" id="loanMonthlyPayment" placeholder="0" step="0.01">
+                    <label>扣款日 * (每月幾號扣款，1-31)</label>
+                    <input type="number" id="loanPaymentDay" placeholder="例如：5" min="1" max="31">
+                </div>
+                <div class="form-group" id="monthlyPaymentGroup">
+                    <label>月付金額 (③等額本息會自動計算，①②免填)</label>
+                    <input type="number" id="loanMonthlyPayment" placeholder="系統自動計算" step="0.01" readonly>
                 </div>
                 <div class="form-group">
                     <label>備註 (選填)</label>
@@ -960,7 +964,8 @@ let loans = JSON.parse(localStorage.getItem('loans')) || [
     { id: 2012, bank: '中國信託', amount: 3510739, rate: 2.36, startDate: '2023-10-02', endDate: '2028-06-16', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
     { id: 2013, bank: '台北富邦銀行', amount: 458335, rate: 2.22, startDate: '2026-06-16', endDate: '2030-12-08', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
     { id: 2014, bank: '台新銀行', amount: 10000000, rate: 2.59, startDate: '2024-02-21', endDate: '2028-08-29', type: 'monthly-interest', monthlyPayment: 0, notes: '特殊：長期借款但每月付息' },
-    { id: 2015, bank: '中國信託', amount: 9639658, rate: 2.36, startDate: '2024-05-07', endDate: '2028-06-16', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' }
+    { id: 2015, bank: '中國信託', amount: 9639658, rate: 2.36, startDate: '2024-05-07', endDate: '2028-06-16', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' },
+    { id: 2016, bank: '台北富邦銀行', amount: 12000000, rate: 2.22, startDate: '2026-06-05', endDate: '2030-12-08', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' }
 ];
 
 // === 自動修正：確保玉山銀行六筆等額本息貸款的月付額正確（防止舊快取覆蓋新設定）===
@@ -977,6 +982,12 @@ loans.forEach(l => {
         l.monthlyPayment = yushanMonthlyPayments[l.id];
     }
 });
+
+// === 自動修正：確保台北富邦 1200 萬新貸款存在（防止舊快取沒有此筆）===
+if (!loans.find(l => l.id === 2016)) {
+    loans.push({ id: 2016, bank: '台北富邦銀行', amount: 12000000, rate: 2.22, startDate: '2026-06-05', endDate: '2030-12-08', type: 'monthly-principal', monthlyPayment: 0, notes: '銀行長期借款' });
+}
+
 localStorage.setItem('loans', JSON.stringify(loans));
 
 const banks = ['台新銀行', '台北富邦銀行', '中國信託', '玉山銀行', '彰化銀行', '國泰世華', '兆豐銀行', '第一銀行'];
@@ -1090,9 +1101,20 @@ function calculateLoanPaymentForDay(loan, year, month, day) {
         return null;
     }
     
+    // 台北富邦銀行 1200萬新貸款：6/5 起借，但第一次扣款是 7/5（隔月才開始還款）
+    if (loan.id === 2016 && checkDate < new Date(2026, 6, 5)) {
+        return null;
+    }
+    
     // 判斷扣款日
     let paymentDays = [];
-    if (loan.bank === '國泰世華') {
+    if (loan.paymentDay) {
+        // 新增貸款專用：直接採用使用者指定的扣款日（不需要額外設定特殊規則）
+        paymentDays = [loan.paymentDay];
+    } else if (loan.id === 2016) {
+        // 台北富邦銀行 1200萬新貸款：每月 5 日扣款
+        paymentDays = [5];
+    } else if (loan.bank === '國泰世華') {
         paymentDays = [16];
     } else if (loan.bank === '兆豐銀行') {
         paymentDays = [7, 25];
@@ -1240,17 +1262,57 @@ function calculateLoanPaymentForDay(loan, year, month, day) {
         };
     }
     
-    // === 一般計算邏輯 ===
-    const monthlyInterest = (loan.amount * loan.rate / 100) / 12;
-    const months = Math.ceil((loanEnd - loanStart) / (1000 * 60 * 60 * 24 * 30));
-    const monthlyPrincipal = loan.type === 'monthly-principal' ? loan.amount / months : 0;
+    // === 一般計算邏輯（新增貸款自動計算用，支援三種還款方式）===
+    const totalMonths = loan.totalMonths || Math.round((loanEnd - loanStart) / (1000 * 60 * 60 * 24 * 30.44));
+    const monthlyRate = (loan.rate / 100) / 12;
     
-    let dayInterest = monthlyInterest;
-    let dayPrincipal = monthlyPrincipal;
-    let type = loan.type === 'monthly-interest' ? '利息' : '本金+利息';
+    // 計算這是第幾期扣款（0 = 第一次扣款）
+    const startDay = loanStart.getDate();
+    const effectivePaymentDay = loan.paymentDay || new Date(loan.endDate).getDate();
+    const firstPaymentOffset = (effectivePaymentDay >= startDay) ? 0 : 1;
+    const monthDiff = (year - loanStart.getFullYear()) * 12 + (month - loanStart.getMonth());
+    const periodIndex = monthDiff - firstPaymentOffset;
     
-    // 兆豐銀行特殊處理
-    if (loan.bank === '兆豐銀行') {
+    let dayInterest = 0;
+    let dayPrincipal = 0;
+    let type = '';
+    
+    if (loan.type === 'monthly-installment') {
+        // === 等額本息：月付金額固定，本金遞增、利息遞減 ===
+        const pmt = loan.monthlyPayment || (monthlyRate === 0 ? loan.amount / totalMonths : 
+            loan.amount * monthlyRate * Math.pow(1 + monthlyRate, totalMonths) / (Math.pow(1 + monthlyRate, totalMonths) - 1));
+        
+        // 用公式直接算出這一期開始時的剩餘本金（不用逐月迴圈）
+        let remainingBalance;
+        if (monthlyRate === 0) {
+            remainingBalance = loan.amount - pmt * periodIndex;
+        } else {
+            remainingBalance = loan.amount * Math.pow(1 + monthlyRate, periodIndex) - pmt * ((Math.pow(1 + monthlyRate, periodIndex) - 1) / monthlyRate);
+        }
+        remainingBalance = Math.max(0, remainingBalance);
+        
+        dayInterest = remainingBalance * monthlyRate;
+        dayPrincipal = Math.min(pmt - dayInterest, remainingBalance);
+        type = '本金+利息';
+        
+    } else if (loan.type === 'monthly-principal') {
+        // === 本金平均攤還：每月本金固定，利息隨餘額遞減 ===
+        const fixedPrincipal = loan.amount / totalMonths;
+        const remainingBalance = Math.max(0, loan.amount - fixedPrincipal * periodIndex);
+        
+        dayInterest = remainingBalance * monthlyRate;
+        dayPrincipal = fixedPrincipal;
+        type = '本金+利息';
+        
+    } else {
+        // === 只付利息：到期一次還本金 ===
+        dayInterest = loan.amount * monthlyRate;
+        dayPrincipal = 0;
+        type = '利息';
+    }
+    
+    // 兆豐銀行特殊處理（僅適用於舊資料，沒有 paymentDay 的貸款）
+    if (loan.bank === '兆豐銀行' && !loan.paymentDay) {
         if (day === 7) {
             dayInterest = 0;
             type = '本金';
@@ -1788,6 +1850,24 @@ function setNoteDateDefault() {
 }
 
 // 貸款相關函數
+function toggleMonthlyPaymentField() {
+    const type = document.getElementById('loanType').value;
+    const field = document.getElementById('loanMonthlyPayment');
+    if (type === 'monthly-installment') {
+        field.placeholder = '系統自動計算';
+    } else {
+        field.placeholder = '此還款方式不需填寫';
+    }
+}
+
+// 計算等額本息月付金額（銀行標準公式 PMT）
+function calculatePMT(amount, annualRatePercent, totalMonths) {
+    const r = (annualRatePercent / 100) / 12; // 月利率
+    if (r === 0) return amount / totalMonths;
+    const pmt = amount * r * Math.pow(1 + r, totalMonths) / (Math.pow(1 + r, totalMonths) - 1);
+    return pmt;
+}
+
 function addLoan() {
     const bank = document.getElementById('loanBank').value;
     const amount = parseFloat(document.getElementById('loanAmount').value);
@@ -1795,12 +1875,30 @@ function addLoan() {
     const startDate = document.getElementById('loanStartDate').value;
     const endDate = document.getElementById('loanEndDate').value;
     const type = document.getElementById('loanType').value;
-    const monthlyPayment = parseFloat(document.getElementById('loanMonthlyPayment').value) || 0;
+    const paymentDay = parseInt(document.getElementById('loanPaymentDay').value) || null;
     const notes = document.getElementById('loanNotes').value;
 
-    if (!bank || !amount || !rate || !startDate || !endDate) {
-        alert('請填寫所有必填欄位');
+    if (!bank || !amount || !rate || !startDate || !endDate || !paymentDay) {
+        alert('請填寫所有必填欄位（含扣款日）');
         return;
+    }
+
+    // 計算總期數（月）
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const totalMonths = Math.round((end - start) / (1000 * 60 * 60 * 24 * 30.44));
+
+    // 自動計算月付金額
+    let monthlyPayment = 0;
+    if (type === 'monthly-installment') {
+        // 等額本息：用銀行標準公式自動算
+        monthlyPayment = calculatePMT(amount, rate, totalMonths);
+    } else if (type === 'monthly-principal') {
+        // 本金平均攤還：僅供參考顯示第一期金額（每月會變動，實際以系統逐月計算為準）
+        monthlyPayment = (amount / totalMonths) + (amount * rate / 100 / 12);
+    } else {
+        // 只付利息：每月利息
+        monthlyPayment = amount * rate / 100 / 12;
     }
 
     const loan = {
@@ -1811,6 +1909,8 @@ function addLoan() {
         startDate,
         endDate,
         type,
+        paymentDay,
+        totalMonths,
         monthlyPayment: Math.round(monthlyPayment * 100) / 100,
         notes: notes || ''
     };
@@ -1956,7 +2056,13 @@ function renderMonthlyPayment() {
 
                 // 判斷扣款日
                 let paymentDays = [];
-                if (l.bank === '國泰世華') {
+                if (l.paymentDay) {
+                    // 新增貸款專用：直接採用使用者指定的扣款日
+                    paymentDays = [l.paymentDay];
+                } else if (l.id === 2016) {
+                    // 台北富邦銀行 1200萬新貸款：每月 5 日扣款
+                    paymentDays = [5];
+                } else if (l.bank === '國泰世華') {
                     paymentDays = [16];
                 } else if (l.bank === '兆豐銀行') {
                     paymentDays = [7, 25];
