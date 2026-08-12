@@ -1672,11 +1672,21 @@ function exportToExcel() {
         ]);
     });
 
-    // 檢查 XLSX 函式庫是否成功載入（可能因網路限制而失敗）
+    // ===== 銀行餘額資料 =====
+    const balanceData = [['銀行', '帳戶', '資料日期', '輸入餘額', '備註']];
+    const dataDate = accountBalances['_dataDate'] || '';
+    defaultAccounts.forEach(acc => {
+        const balance = accountBalances[acc.id] || 0;
+        balanceData.push([acc.bank, acc.name, dataDate, balance, '']);
+    });
+    balanceData.push(['', '', '儲存於', accountBalances['_updatedAt'] || '', '']);
+
+    // 檢查 XLSX 函式庫是否成功載入
     if (typeof XLSX === 'undefined') {
-        alert('⚠️ Excel 匯出元件無法載入（可能是網路限制），改用 CSV 格式匯出（會下載 2 個檔案：定期存款 + 貸款）');
-        exportToCSV(depositData, '定期存款追蹤_' + new Date().toISOString().split('T')[0] + '.csv');
-        exportToCSV(loanData, '貸款追蹤_' + new Date().toISOString().split('T')[0] + '.csv');
+        alert('⚠️ Excel 匯出元件無法載入（可能是網路限制），改用 CSV 格式匯出（會下載 3 個檔案）');
+        exportToCSV(depositData, '定期存款_' + new Date().toISOString().split('T')[0] + '.csv');
+        exportToCSV(loanData, '貸款_' + new Date().toISOString().split('T')[0] + '.csv');
+        exportToCSV(balanceData, '銀行餘額_' + new Date().toISOString().split('T')[0] + '.csv');
         return;
     }
 
@@ -1688,12 +1698,16 @@ function exportToExcel() {
         
         const wsLoan = XLSX.utils.aoa_to_sheet(loanData);
         XLSX.utils.book_append_sheet(wb, wsLoan, '貸款');
+
+        const wsBalance = XLSX.utils.aoa_to_sheet(balanceData);
+        XLSX.utils.book_append_sheet(wb, wsBalance, '銀行餘額');
         
         XLSX.writeFile(wb, '資金管理系統_' + new Date().toISOString().split('T')[0] + '.xlsx');
     } catch (err) {
         alert('⚠️ Excel 匯出發生錯誤，改用 CSV 格式匯出\n錯誤訊息：' + err.message);
-        exportToCSV(depositData, '定期存款追蹤_' + new Date().toISOString().split('T')[0] + '.csv');
-        exportToCSV(loanData, '貸款追蹤_' + new Date().toISOString().split('T')[0] + '.csv');
+        exportToCSV(depositData, '定期存款_' + new Date().toISOString().split('T')[0] + '.csv');
+        exportToCSV(loanData, '貸款_' + new Date().toISOString().split('T')[0] + '.csv');
+        exportToCSV(balanceData, '銀行餘額_' + new Date().toISOString().split('T')[0] + '.csv');
     }
 }
 
@@ -1749,6 +1763,8 @@ function processFile(file) {
                 const firstRow = jsonData[0];
                 if (firstRow['銀行'] && firstRow['借款金額']) {
                     importLoans(jsonData);
+                } else if (firstRow['帳戶'] && firstRow['輸入餘額'] !== undefined) {
+                    importBalances(jsonData);
                 } else {
                     importDeposits(jsonData);
                 }
@@ -1790,6 +1806,37 @@ function processFile(file) {
     // 重置 input 讓同一個檔案可以重複匯入
     document.getElementById('fileInput').value = '';
 }
+function importBalances(data) {
+    // 過濾掉備註列（儲存於那列）
+    const validRows = data.filter(row => row['銀行'] && row['帳戶'] && row['輸入餘額'] !== '');
+    
+    if (validRows.length === 0) {
+        alert('無法識別銀行餘額資料格式');
+        return;
+    }
+
+    if (!confirm(`即將覆蓋現有銀行餘額，匯入 ${validRows.length} 筆，確定嗎？`)) return;
+
+    // 對應帳戶 id
+    validRows.forEach(row => {
+        const acc = defaultAccounts.find(a => a.bank === row['銀行'] && a.name === row['帳戶']);
+        if (acc) {
+            accountBalances[acc.id] = parseFloat(row['輸入餘額']) || 0;
+        }
+    });
+
+    // 還原資料日期
+    const dateRow = data.find(row => row['帳戶'] === '' && row['銀行'] === '');
+    if (dateRow && dateRow['資料日期']) {
+        accountBalances['_dataDate'] = dateRow['資料日期'];
+    }
+
+    accountBalances['_updatedAt'] = new Date().toLocaleString('zh-TW');
+    localStorage.setItem('accountBalances', JSON.stringify(accountBalances));
+    renderBalanceTable();
+    alert('✅ 銀行餘額匯入成功！');
+}
+
 function importDeposits(data) {
     const newDeposits = data.map((row, index) => ({
         id: index + 1,
