@@ -601,10 +601,11 @@
     <div class="main-layout">
     <div class="tabs">
         <button class="tab active" onclick="switchTab(event, 'calendar')">📅 月曆</button>
-        <button class="tab" onclick="switchTab(event, 'list')">📋 詳細列表</button>
-        <button class="tab" onclick="switchTab(event, 'loan-monthly')">📈 現金流</button>
+        <button class="tab" onclick="switchTab(event, 'balance')">📊 資金監控</button>
+        <button class="tab" onclick="switchTab(event, 'loan-monthly')">🏦 銀行還款資訊</button>
+        <button class="tab" onclick="switchTab(event, 'list')">📋 明細列表</button>
+        <button class="tab" onclick="switchTab(event, 'add')">➕ 新增存貸</button>
         <button class="tab" onclick="switchTab(event, 'notes')">📝 備註管理</button>
-        <button class="tab" onclick="switchTab(event, 'add')">➕ 新增</button>
     </div>
 
     <div class="content-area">
@@ -707,6 +708,59 @@
                 </thead>
                 <tbody id="loanTableBody"></tbody>
             </table>
+        </div>
+    </div>
+
+    <!-- 帳戶餘額管理 -->
+    <div id="balance" class="tab-content">
+        <div style="padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                <h2 style="margin: 0; color: #1f2937;">📊 資金監控</h2>
+                <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 8px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px 12px;">
+                        <label style="color: #374151; font-size: 13px; font-weight: 500; white-space: nowrap;">📅 資料日期：</label>
+                        <input type="date" id="balanceDataDate" style="border: none; background: transparent; font-size: 13px; color: #1f2937; cursor: pointer;">
+                    </div>
+                    <span id="balanceUpdateTime" style="color: #6b7280; font-size: 12px;"></span>
+                    <button onclick="saveBalances()" style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">💾 儲存</button>
+                </div>
+            </div>
+
+            <!-- 警告提示 -->
+            <div id="balanceWarnings" style="margin-bottom: 20px;"></div>
+
+            <!-- 說明文字 -->
+            <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; color: #1e40af; font-size: 13px;">
+                💡 輸入各銀行帳戶的最新餘額，系統會自動比對未來 14 天內的貸款扣款。<br>
+                🔴 14天內不足（扣後低於 $10,000）&nbsp;&nbsp;🟡 30天內不足（扣後低於 $10,000）
+            </div>
+
+            <!-- 帳戶餘額輸入表 -->
+            <div style="background: white; border-radius: 8px; border: 1px solid #e5e7eb; overflow: hidden;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f9fafb;">
+                            <th style="padding: 12px 16px; text-align: left; color: #374151; font-weight: 600; border-bottom: 1px solid #e5e7eb;">銀行</th>
+                            <th style="padding: 12px 16px; text-align: left; color: #374151; font-weight: 600; border-bottom: 1px solid #e5e7eb;">帳戶</th>
+                            <th style="padding: 12px 16px; text-align: right; color: #374151; font-weight: 600; border-bottom: 1px solid #e5e7eb;">輸入餘額 (TWD)</th>
+                            <th style="padding: 12px 16px; text-align: right; color: #374151; font-weight: 600; border-bottom: 1px solid #e5e7eb;">估計今日餘額</th>
+                            <th style="padding: 12px 16px; text-align: center; color: #374151; font-weight: 600; border-bottom: 1px solid #e5e7eb;">30天內扣款</th>
+                            <th style="padding: 12px 16px; text-align: center; color: #374151; font-weight: 600; border-bottom: 1px solid #e5e7eb;">狀態</th>
+                        </tr>
+                    </thead>
+                    <tbody id="balanceTableBody"></tbody>
+                </table>
+            </div>
+
+            <!-- 總計 -->
+            <div style="margin-top: 16px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 600; color: #166534;">全行帳戶估計總餘額</span>
+                <span id="totalBalance" style="font-size: 20px; font-weight: 700; color: #166534;">$0</span>
+            </div>
+            <div style="margin-top: 8px; background: #fef9c3; border: 1px solid #fde047; border-radius: 8px; padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 600; color: #854d0e;">全行帳戶 30 天內總還款金額</span>
+                <span id="totalUpcomingPayment" style="font-size: 20px; font-weight: 700; color: #854d0e;">$0</span>
+            </div>
         </div>
     </div>
 
@@ -1673,41 +1727,72 @@ function exportToCSV(wsData, filename) {
 function processFile(file) {
     if (!file) return;
     
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, {type: 'array'});
-            const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-            const jsonData = XLSX.utils.sheet_to_json(worksheet);
-            
-            if (jsonData.length === 0) {
-                alert('檔案為空，無法匯入');
-                return;
-            }
-            
-            // 偵測是定期存款還是貸款
-            const firstRow = jsonData[0];
-            const isLoan = firstRow['銀行借編'] || firstRow['借款金額'] || firstRow['年利率'];
-            
-            if (isLoan) {
-                // 匯入貸款
-                importLoans(jsonData);
-            } else {
-                // 匯入定期存款
-                importDeposits(jsonData);
-            }
-        } catch (error) {
-            alert('匯入失敗：' + error.message);
-        }
-    };
-    reader.readAsArrayBuffer(file);
-}
+    const fileName = file.name.toLowerCase();
+    
+    if (fileName.endsWith('.csv')) {
+        // CSV 格式：直接讀取文字，不需要 XLSX
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const text = e.target.result.replace(/^\uFEFF/, ''); // 移除 BOM
+                const lines = text.split('\n').filter(l => l.trim());
+                const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+                const jsonData = lines.slice(1).map(line => {
+                    const values = line.split(',').map(v => v.replace(/"/g, '').trim());
+                    const obj = {};
+                    headers.forEach((h, i) => obj[h] = values[i] || '');
+                    return obj;
+                }).filter(row => Object.values(row).some(v => v));
 
+                if (jsonData.length === 0) { alert('檔案為空，無法匯入'); return; }
+
+                const firstRow = jsonData[0];
+                if (firstRow['銀行'] && firstRow['借款金額']) {
+                    importLoans(jsonData);
+                } else {
+                    importDeposits(jsonData);
+                }
+            } catch (error) {
+                alert('匯入失敗：' + error.message);
+            }
+        };
+        reader.readAsText(file, 'UTF-8');
+        
+    } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+        // Excel 格式：需要 XLSX 函式庫
+        if (typeof XLSX === 'undefined') {
+            alert('⚠️ Excel 匯入需要網路連線載入元件，目前無法使用。\n請改用 CSV 格式匯入（先從系統匯出 CSV，修改後再匯入）。');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                if (jsonData.length === 0) { alert('檔案為空，無法匯入'); return; }
+                const firstRow = jsonData[0];
+                if (firstRow['銀行借編'] || firstRow['借款金額'] || firstRow['年利率']) {
+                    importLoans(jsonData);
+                } else {
+                    importDeposits(jsonData);
+                }
+            } catch (error) {
+                alert('匯入失敗：' + error.message);
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    } else {
+        alert('請上傳 .csv 或 .xlsx 格式的檔案');
+    }
+    
+    // 重置 input 讓同一個檔案可以重複匯入
+    document.getElementById('fileInput').value = '';
+}
 function importDeposits(data) {
-    // 根據欄位名稱映射數據
     const newDeposits = data.map((row, index) => ({
-        id: Math.max(...deposits.map(d => d.id), 0) + index + 1,
+        id: index + 1,
         bankName: row['銀行'] || row['銀行名稱'] || '',
         amount: parseFloat(row['金額'] || row['金額(原幣)'] || 0),
         rate: parseFloat(row['利率'] || row['年利率'] || 0),
@@ -1722,17 +1807,18 @@ function importDeposits(data) {
         return;
     }
     
-    deposits = [...deposits, ...newDeposits];
+    if (!confirm(`即將覆蓋現有的 ${deposits.length} 筆定期存款，匯入 ${newDeposits.length} 筆新資料，確定嗎？`)) return;
+    
+    deposits = newDeposits; // 覆蓋，不是新增
     saveDeposits();
     renderTable();
     renderCalendar();
-    alert(`成功匯入 ${newDeposits.length} 筆定期存款`);
+    alert(`✅ 成功覆蓋匯入 ${newDeposits.length} 筆定期存款`);
 }
 
 function importLoans(data) {
-    // 根據欄位名稱映射數據
     const newLoans = data.map((row, index) => ({
-        id: Math.max(...loans.map(l => l.id), 0) + index + 1,
+        id: index + 1,
         bank: row['銀行'] || row['銀行名稱'] || '',
         amount: parseFloat(row['金額'] || row['借款金額'] || row['借款餘額(原幣)'] || 0),
         rate: parseFloat(row['利率'] || row['年利率'] || 0),
@@ -1748,12 +1834,14 @@ function importLoans(data) {
         return;
     }
     
-    loans = [...loans, ...newLoans];
-    localStorage.loans = JSON.stringify(loans);
+    if (!confirm(`即將覆蓋現有的 ${loans.length} 筆貸款，匯入 ${newLoans.length} 筆新資料，確定嗎？`)) return;
+    
+    loans = newLoans; // 覆蓋，不是新增
+    localStorage.setItem('loans', JSON.stringify(loans));
     renderLoanTable();
     renderCalendar();
     renderMonthlyPayment();
-    alert(`成功匯入 ${newLoans.length} 筆貸款`);
+    alert(`✅ 成功覆蓋匯入 ${newLoans.length} 筆貸款`);
 }
 
 function printReport() {
@@ -2218,6 +2306,182 @@ function toggleDetails(detailRowId) {
 
 // 初始化
 // ===== 登入功能 =====
+// ===== 帳戶餘額管理 =====
+
+const defaultAccounts = [
+    { id: 'cathay_checking',  bank: '國泰世華',     name: '乙存',  bankKey: '國泰世華' },
+    { id: 'taishin_checking', bank: '台新銀行',     name: '乙存',  bankKey: '台新銀行' },
+    { id: 'fubon_checking',   bank: '台北富邦銀行', name: '乙存',  bankKey: '台北富邦銀行' },
+    { id: 'esun_checking',    bank: '玉山銀行',     name: '乙存',  bankKey: '玉山銀行' },
+    { id: 'chang_checking',   bank: '彰化銀行',     name: '乙存',  bankKey: '彰化銀行' },
+    { id: 'mega_checking',    bank: '兆豐銀行',     name: '乙存',  bankKey: '兆豐銀行' },
+    { id: 'bot_checking',     bank: '第一銀行',     name: '乙存',  bankKey: '第一銀行' },
+    { id: 'ctbc_checking',    bank: '中國信託',     name: '乙存',  bankKey: '中國信託' },
+];
+
+let accountBalances = JSON.parse(localStorage.getItem('accountBalances')) || {};
+
+function saveBalances() {
+    const dataDateInput = document.getElementById('balanceDataDate');
+    accountBalances['_dataDate'] = dataDateInput ? dataDateInput.value : '';
+    accountBalances['_updatedAt'] = new Date().toLocaleString('zh-TW');
+
+    defaultAccounts.forEach(acc => {
+        const input = document.getElementById('bal_' + acc.id);
+        if (input) accountBalances[acc.id] = parseFloat(input.value.replace(/,/g, '')) || 0;
+    });
+
+    localStorage.setItem('accountBalances', JSON.stringify(accountBalances));
+    renderBalanceTable();
+    renderBalanceWarningForCashflow();
+    alert('✅ 餘額已儲存！');
+}
+
+// 計算從資料日期到今天，該銀行已發生的扣款總額（用來推算今日估計餘額）
+function getPastPaymentsSinceDataDate(bankKey) {
+    const dataDate = accountBalances['_dataDate'];
+    if (!dataDate) return 0;
+
+    const start = new Date(dataDate);
+    start.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (start >= today) return 0; // 資料日期是今天或未來，不用扣
+
+    let total = 0;
+    // 從資料日期的隔天開始，到昨天（不含今天，今天還沒扣）
+    for (let d = new Date(start); d < today; d.setDate(d.getDate() + 1)) {
+        loans.forEach(l => {
+            if (l.bank !== bankKey) return;
+            const payment = calculateLoanPaymentForDay(l, d.getFullYear(), d.getMonth(), d.getDate());
+            if (payment && payment.total > 0) total += payment.total;
+        });
+    }
+    return total;
+}
+
+// 計算未來 N 天內的扣款總額（從今天開始）
+function getUpcomingPayments(bankKey, days) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let total = 0;
+    for (let i = 1; i <= days; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() + i);
+        loans.forEach(l => {
+            if (l.bank !== bankKey) return;
+            const payment = calculateLoanPaymentForDay(l, d.getFullYear(), d.getMonth(), d.getDate());
+            if (payment && payment.total > 0) total += payment.total;
+        });
+    }
+    return total;
+}
+
+function renderBalanceTable() {
+    const tbody = document.getElementById('balanceTableBody');
+    if (!tbody) return;
+
+    let totalBal = 0;
+    let totalUpcoming30 = 0;
+    let warningHtml = '';
+    let rows = '';
+
+    defaultAccounts.forEach(acc => {
+        const originalBalance = accountBalances[acc.id] || 0;
+
+        // 自動推算今日估計餘額（原始餘額 - 資料日期後已發生的扣款）
+        const pastPaid = getPastPaymentsSinceDataDate(acc.bankKey);
+        const estimatedBalance = Math.max(0, originalBalance - pastPaid);
+        totalBal += estimatedBalance;
+
+        const pay14 = getUpcomingPayments(acc.bankKey, 14);
+        const pay30 = getUpcomingPayments(acc.bankKey, 30);
+        const hasloan = loans.some(l => l.bank === acc.bankKey);
+        totalUpcoming30 += pay30;
+
+        let statusHtml = '<span style="color:#6b7280;">—</span>';
+        let rowBg = '';
+
+        if (hasloan && pay30 > 0) {
+            const afterPay14 = estimatedBalance - pay14;
+            const afterPay30 = estimatedBalance - pay30;
+
+            if (pay14 > 0 && afterPay14 < 10000) {
+                // 🔴 14天內不足
+                statusHtml = `<span style="background:#fee2e2;color:#991b1b;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;">🔴 14天內不足</span>`;
+                rowBg = 'background:#fff5f5;';
+                warningHtml += `<div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:12px 16px;margin-bottom:8px;color:#991b1b;">
+                    🔴 <strong>${acc.bank} ${acc.name}</strong>：估計今日餘額 $${Math.round(estimatedBalance).toLocaleString()}，14天內扣款 <strong>$${Math.round(pay14).toLocaleString()}</strong>，扣後剩 <strong>$${Math.round(afterPay14).toLocaleString()}</strong>（低於安全緩衝 $10,000）
+                </div>`;
+            } else if (afterPay30 < 10000) {
+                // 🟡 30天內不足
+                statusHtml = `<span style="background:#fef9c3;color:#854d0e;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;">🟡 30天內不足</span>`;
+                rowBg = 'background:#fffbeb;';
+                warningHtml += `<div style="background:#fef9c3;border:1px solid #fde047;border-radius:8px;padding:12px 16px;margin-bottom:8px;color:#854d0e;">
+                    🟡 <strong>${acc.bank} ${acc.name}</strong>：估計今日餘額 $${Math.round(estimatedBalance).toLocaleString()}，30天內扣款 <strong>$${Math.round(pay30).toLocaleString()}</strong>，扣後剩 <strong>$${Math.round(afterPay30).toLocaleString()}</strong>（低於安全緩衝 $10,000）
+                </div>`;
+            } else {
+                statusHtml = `<span style="background:#dcfce7;color:#166534;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;">✅ 正常</span>`;
+            }
+        }
+
+        const displayPay = pay30 > 0 ? `$${Math.round(pay30).toLocaleString()}` : '—';
+        const pastPaidDisplay = pastPaid > 0 ? `<span style="font-size:11px;color:#6b7280;">（已扣 $${Math.round(pastPaid).toLocaleString()}）</span>` : '';
+
+        rows += `<tr style="${rowBg}border-bottom:1px solid #f3f4f6;">
+            <td style="padding:12px 16px;font-weight:500;color:#1f2937;">${acc.bank}</td>
+            <td style="padding:12px 16px;color:#6b7280;">${acc.name}</td>
+            <td style="padding:12px 16px;text-align:right;">
+                <input type="number" id="bal_${acc.id}"
+                    value="${originalBalance || ''}"
+                    placeholder="0"
+                    style="width:140px;padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;text-align:right;font-size:14px;"
+                    oninput="updateTotalPreview()">
+                ${pastPaidDisplay}
+            </td>
+            <td style="padding:12px 16px;text-align:right;color:#1f2937;font-weight:500;">$${Math.round(estimatedBalance).toLocaleString()}</td>
+            <td style="padding:12px 16px;text-align:center;color:#374151;">${displayPay}</td>
+            <td style="padding:12px 16px;text-align:center;">${statusHtml}</td>
+        </tr>`;
+    });
+
+    tbody.innerHTML = rows;
+    document.getElementById('balanceWarnings').innerHTML = warningHtml;
+    document.getElementById('totalBalance').textContent = '$' + Math.round(totalBal).toLocaleString();
+
+    // 全行帳戶總還款金額（30天內）
+    const totalPayEl = document.getElementById('totalUpcomingPayment');
+    if (totalPayEl) totalPayEl.textContent = '$' + Math.round(totalUpcoming30).toLocaleString();
+
+    // 顯示資料日期和儲存時間
+    const timeEl = document.getElementById('balanceUpdateTime');
+    if (timeEl) {
+        const dataDate = accountBalances['_dataDate'] ? `資料日期：${accountBalances['_dataDate']}　` : '';
+        const updatedAt = accountBalances['_updatedAt'] ? `儲存於：${accountBalances['_updatedAt']}` : '';
+        timeEl.textContent = dataDate + updatedAt;
+    }
+
+    // 還原資料日期輸入欄
+    const dateInput = document.getElementById('balanceDataDate');
+    if (dateInput) {
+        dateInput.value = accountBalances['_dataDate'] || new Date().toISOString().split('T')[0];
+    }
+}
+
+function updateTotalPreview() {
+    let total = 0;
+    defaultAccounts.forEach(acc => {
+        const input = document.getElementById('bal_' + acc.id);
+        if (input) total += parseFloat(input.value.replace(/,/g, '')) || 0;
+    });
+    document.getElementById('totalBalance').textContent = '$' + Math.round(total).toLocaleString();
+}
+
+function renderBalanceWarningForCashflow() {
+    // 已移除，銀行還款資訊頁面不顯示警告
+}
+
 function login() {
     const username = document.getElementById('loginUsername').value;
     const password = document.getElementById('loginPassword').value;
@@ -2236,6 +2500,8 @@ function login() {
         renderLoanDashboard();
         renderLoanTable();
         renderMonthlyPayment();
+        renderBalanceTable();
+        renderBalanceWarningForCashflow();
     } else {
         loginError.style.display = 'block';
         document.getElementById('loginPassword').value = '';
@@ -2264,6 +2530,8 @@ window.addEventListener('DOMContentLoaded', function() {
     renderLoanDashboard();
     renderLoanTable();
     renderMonthlyPayment();
+    renderBalanceTable();
+    renderBalanceWarningForCashflow();
     document.getElementById('startDate').valueAsDate = new Date();
     document.getElementById('loanStartDate').valueAsDate = new Date();
     setNoteDateDefault();
